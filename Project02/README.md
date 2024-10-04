@@ -1,8 +1,6 @@
 Sketches for Qualitative Project
 Daia Bromberg 10/3/24
 
-Sketches for Qualitative Project
-
 ![Project Sketch](BalloonSketch.png)
 
 The balloon project sketch includes lines of text with a keyword included displayed with the keyword lined up and in a color for emphasis. The text is sorted from keyword options at the top that are each in a little balloon drawing graphic. This text is pulled from the descriptions of items in the Smithsonian collection "The NASM Collection of Objects Related to Early Ballooning" with 451 total objects. Clicking on one of the displayed lines will display the item and it's description.
