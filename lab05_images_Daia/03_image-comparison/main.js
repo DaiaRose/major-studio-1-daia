@@ -68,6 +68,7 @@ function displayMostSimilarPair(images) {
     });
   });
 }
+//Jimp opens up the image like data and then needs to render it back
 
 // Main function to load, compare, and display images
 async function main() {
