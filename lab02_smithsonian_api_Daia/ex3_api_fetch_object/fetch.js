@@ -27,4 +27,3 @@ fetchContentDataById("ld1-1643408783796-1643408793717-0");
 // Task 1: Find a different object on https://collections.si.edu/search/ and retrieve the data with the code above
 // Make sure to check the box "Only return results with CC0 media" when searching
 // Task 2: Write the result into a variable and explore different variables through the Console
-

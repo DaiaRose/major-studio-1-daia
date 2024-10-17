@@ -1,0 +1,39 @@
+/* Style for the description box */
+.description-box {
+    position: absolute; /* Position it absolutely so it overlaps the canvas */
+    top: 80px; /* Adjust this to increase the space at the top before the box */
+    left: 50px; /* Align with the canvas' left position */
+    width: 48%;  /* Prevent it from expanding across the entire width */
+    background-color: rgba(226, 219, 201);
+    padding: 10px;
+    border: 1px solid #000;
+    display: none; /* Hidden until needed */
+    z-index: 10; /* Ensure it's on top of the canvas */
+}
+
+/* Style for the image inside the description box */
+.description-box img {
+    float: left;
+    margin-right: 10px;
+    width: 150px;
+    height: 150px;
+}
+
+/* Style for the text inside the description box */
+.description-box p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* Ensure canvas is properly layered below the description box */
+canvas {
+    position: relative;
+    z-index: 1; /* Keep canvas under the description box */
+}
+
+/* Ensure buttons are at the top and above the canvas */
+button {
+    position: relative;
+    z-index: 5; /* Keep buttons above the canvas but below the description box */
+    margin: 5px;
+}
