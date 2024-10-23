@@ -1,28 +1,40 @@
 
-/* Description box */
-.description-box {
+#main-title {
     position: absolute;
-    top: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border: 1px solid #000;
-    z-index: 10;
+    width: 90%;
+    left: 5%; 
+    font-family: 'Iowan Old Style', serif;
+    font-weight: 600;
+    font-size: 50px;
+    line-height: 1.2;
+    text-align: center;
+    color: #000000;
+
 }
 
-.description-box img {
-    float: left;
-    margin-right: 10px;
-    width: 300px;
-    height: 300px;
+/* Subtitle */
+#sub-title {
+    position: absolute;
+    width: 90%;
+    top: 60px; 
+    left: 5%;  
+
+    font-family: 'Iowan Old Style', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 40px;
+    line-height: 1.2;
+    text-align: center;
+    color: #000000;
+
 }
+
 
 /* Ensure canvas is properly layered below the description box */
 canvas {
     display: block;
     margin: 0 auto;  /* Center the canvas horizontally */
+    margin-top: 40px;
     z-index: 1;  /* Make sure the canvas stays behind other elements if necessary */
     max-width: 100%; /* Ensure the canvas never exceeds the window width */
 }
@@ -30,55 +42,51 @@ canvas {
 /* Flexbox container for buttons */
 #button-container {
     position: absolute;
-    top: 90px;   /* Adjust to align the container vertically */
+    top: 200px;   /* Adjust to align the container vertically */
     left: 50%;  /* Center the button container horizontally */
     transform: translateX(-50%); /* Truly center the container */
     display: flex;
     justify-content: center;  /* Center the buttons inside the container */
-    gap: 15px;  /* Space between buttons */
+    gap: 25px;  /* Space between buttons */
     z-index: 5;  /* Ensure buttons appear above the canvas */
 }
 
 /* Button styles */
 button {
     padding: 5px 10px;
-    font-size: 18;  /* Make button text responsive */
+    font-family: 'Iowan Old Style', serif;
+    font-size: 20px; 
     background-color: #fff;
     border: 1px solid #000;
     border-radius: 5px;
     cursor: pointer;
 }
 
-#main-title {
+/* Description box */
+.description-box {
     position: absolute;
-    width: 90%;  /* 90% of the screen width */
-    top: 0px;     /* 5% from the top */
-    left: 5%;    /* 5% from the left */
-    
-    font-family: 'Iowan Old Style', serif;
-    font-weight: 600;
-    font-size: 90;  /* Make the font size responsive to the viewport width */
-    line-height: 1.2;
-    text-align: center;
-
-    color: #000000;
-    text-shadow: 2px 4px 4px #FFFFFF;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    padding: 10px;
+    background-color: rgba(226, 219, 201, 0.9);
+    border: 3px solid #000;
+    z-index: 10;
+    display: none;  /* Ensure the description box is hidden by default */
 }
 
-/* Subtitle */
-#sub-title {
-    position: absolute;
-    width: 90%;  /* 90% of the screen width */
-    top: 4%;    /* Adjust this so it positions below the title */
-    left: 5%;    /* 5% from the left */
-
-    font-family: 'Iowan Old Style', serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: 60;  /* Responsive font size */
-    line-height: 1.2;
-    text-align: center;
-
-    color: #000000;
-    text-shadow: 2px 4px 4px #FFFFFF;
+/* Description text style */
+.description-box p {
+    font-size: 20px; 
+    font-family: 'Iowan Old Style', serif; 
+    color: #333; 
+    line-height: 1.5;
 }
+
+.description-box img {
+    float: left;
+    margin-right: 10px;
+    width: 400px;
+}
+
