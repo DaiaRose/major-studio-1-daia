@@ -9,29 +9,31 @@ let txt, word, keywords = [
 //     "tragedy", "died", "crashed", "fail"
 //   ];
 
-let bgImage;
 let kwicLines = [];
 let displayImage = null; // Variable to store the current image to display
 let displayText = "";    // Variable to store the current text to display
 
 
 function preload() {
-    txt = loadStrings('/Project02/Data/practiceText.txt', (data) => {
+    txt = loadStrings('Data/practiceText.txt', (data) => {
         console.log("File loaded successfully:", data);
     }, (error) => {
         console.error("Failed to load txt file:", error);
     });
-    bgImage = loadImage('/Project02/Data/NASM-NASM-9A14471.jpg');
 }
   
 function setup() {
-    createCanvas(800, 500);
+    createCanvas(windowWidth * 1, windowHeight * 1); // 90% width and 70% height of the window
     textFont('Times New Roman', 16);
 
     RiTa.concordance(txt.join('\n')); // create concordance
     word = RiTa.random(keywords); // pick a word to start
 
     createButtons();
+}
+// Make the canvas resize when the window is resized
+function windowResized() {
+    resizeCanvas(windowWidth * 0.9, windowHeight * 0.7); // 90% width and 70% height
 }
 
 //this part is a test right now and ideally happens dynamically
@@ -50,12 +52,8 @@ const kwicData = {
 function draw() {
     kwicLines = []; // Reset KWIC line boundaries for each draw call
 
-    imageMode(CENTER);
-    image(bgImage, width / 2, height / 2, bgImage.width * 0.45, bgImage.height * 0.45); // Adjust 0.75 as needed
-
-
     // Set transparency for the background box behind text
-    fill(226, 219, 201, 220);//background box behind text color matched
+    fill(226, 219, 201, 230);//background box behind text color matched
     noStroke();
     //rect(50, 80, width - 100, height - 150); // Draw a box for the text area
     rect(50, 80, width - 100, height - 150)
@@ -73,7 +71,7 @@ function draw() {
         let parts = kwic[i].split(word)
         .map(p => p.replace(/\n/g,' '));// I don't want this. see "the" button
         
-        let x = width / 2, y = i * 24 + 90;
+        let x = width / 2, y = i * 24 + 150;
         if (i === 0) { 
             // Capture the Y-position of the first KWIC line
             boxTop = y;
@@ -139,32 +137,31 @@ function clearDescriptionBox() {
 
 
 function createButtons() {
+    const buttonContainer = document.getElementById('button-container');
+    buttonContainer.innerHTML = '';  // Clear any existing buttons
 
-    // create array of buttons
-    let buttons = [], buttonsW = 0, gap = 10;
-    for (let i = 0; i < keywords.length; i++) {
-        let button = createButton(keywords[i]);
+    // Loop through keywords and create buttons
+    keywords.forEach(keyword => {
+        let button = createButton(keyword);
         console.log(button.elt.textContent);
         button.class("button");
-        button.style('color', keywords[i] === word ? 'rgb(200,0,0)' : 'black');
-        buttonsW += button.width;
-        buttons.push(button);
-    }
 
-    // center and position each button
-    let totalW = (keywords.length * gap) + buttonsW;
-    let sofar = 0, startX = width / 2 - totalW / 2;
-    for (let i = 0; i < buttons.length; i++) {
-        buttons[i].position(startX + sofar, 30);
-        sofar += buttons[i].width + gap;
-    }
+        // Highlight the selected word in red
+        button.style('color', keyword === word ? 'rgb(200,0,0)' : 'black');
+        
+        // Append each button to the container
+        buttonContainer.appendChild(button.elt);
 
-    // add handler function for each
-    buttons.forEach((b, i) => b.mouseClicked(() => {
-        word = b.elt.textContent;
-        buttons.forEach(but => but.style('color', 'black'));
-        b.style('color', 'rgb(200,0,0)'); // make clicked button red
-        clearDescriptionBox(); // Clear the description box when a new keyword is selected
-        loop();
-    }));
+        // Add click handler for each button
+        button.mouseClicked(() => {
+            word = button.elt.textContent;
+            
+            // Reset all button colors to black, except the clicked one
+            buttonContainer.querySelectorAll('button').forEach(but => but.style.color = 'black');
+            button.style('color', 'rgb(200,0,0)');  // Highlight clicked button in red
+
+            clearDescriptionBox();  // Clear the description box when a new keyword is selected
+            loop();  // Redraw the canvas with the new word
+        });
+    });
 }
