@@ -43,7 +43,7 @@ canvas {
 /* Flexbox container for buttons */
 #button-container {
     position: absolute;
-    top: 200px;   /* Adjust to align the container vertically */
+    top: 170px;   /* Adjust to align the container vertically */
     left: 50%;  /* Center the button container horizontally */
     transform: translateX(-50%); /* Truly center the container */
     display: flex;
