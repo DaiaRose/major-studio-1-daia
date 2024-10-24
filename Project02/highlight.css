@@ -3,6 +3,7 @@
     position: absolute;
     width: 90%;
     left: 5%; 
+    top:-15px;
     font-family: 'Iowan Old Style', serif;
     font-weight: 600;
     font-size: 50px;
@@ -16,7 +17,7 @@
 #sub-title {
     position: absolute;
     width: 90%;
-    top: 60px; 
+    top: 50px; 
     left: 5%;  
 
     font-family: 'Iowan Old Style', serif;
