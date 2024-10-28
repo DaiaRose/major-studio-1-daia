@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Word Highlight</title>
+        <title>NASM phrases</title>
         <!-- Link to p5.js and RiTa.js -->
         <script src="https://unpkg.com/p5"></script>
         <script src="https://unpkg.com/rita"></script>
@@ -12,8 +12,14 @@
         <base href="/major-studio-1-daia/Project02/" />
     </head>
     <body>
-        <h1 id="main-title">Triumph and Tragedy</h1>
-        <h2 id="sub-title">in the National Air and Space Museum Collection</h2>
+        <!-- Main content of the homepage -->
+    <div class="homepage-container">
+        <h1>Triumph and Tragedy</h1>
+        <h2>in the National Air and Space Museum Collection</h2>
+
+    </div>
+
+        <!-- Interaction Section -->
         <!-- The description box for displaying images and text -->
         <div id="description-box" class="description-box">
             <img id="description-image" src="" alt="Description Image" />
@@ -23,9 +29,6 @@
         <script src="Data/kwicData.js"></script> <!-- Include kwicData file first -->
         <!-- Load your p5.js sketch after the HTML is rendered -->
         <script src="wordHighlight.js"></script>
-
-        <!-- Link back to homepage -->
-        <a href="homepage.html" class="back-button">Homepage</a>
 
     </body>
 </html>

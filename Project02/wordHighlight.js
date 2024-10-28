@@ -28,7 +28,7 @@ console.log(allLinks);
   // Instead, we're working directly with kwicData for the KWIC visualization
   
   function setup() {
-    createCanvas(windowWidth * .9, windowHeight * .8);
+    createCanvas(windowWidth * .9, windowHeight * 1);
     textFont('Times New Roman', 20);
   
     // RiTa concordance based on kwicData
@@ -42,7 +42,7 @@ console.log(allLinks);
   
   // Make the canvas resize when the window is resized
   function windowResized() {
-    resizeCanvas(windowWidth * .9, windowHeight * .8); 
+    resizeCanvas(windowWidth * .9, windowHeight * 1); 
   }
   
   console.log("KWIC!", kwicData);
@@ -99,60 +99,83 @@ console.log(allLinks);
     }
     noLoop();
 }
+function displayKeywordDetails(kwicLine) {
+  const closestMatch = Object.keys(kwicData).find(key => key.includes(kwicLine));
 
-  
-  function mousePressed() {
-    // Check if the mouse is clicked within any of the stored KWIC lines
-    for (let kwicLine of kwicLines) {
-      if (mouseX > kwicLine.xStart && mouseX < kwicLine.xEnd && mouseY > kwicLine.y - 12 && mouseY < kwicLine.y + 12) {
-        // When a KWIC line is clicked, display its associated image and text
-        displayKeywordDetails(kwicLine.kwicLine);
-        break;
-      }
-    }
+  if (closestMatch) {
+      const data = kwicData[closestMatch];
+
+      clear();  // Clear canvas (no KWIC text)
+      fill(226, 219, 201, 230);  // Background color for the box
+      noStroke();
+      rect(50, 80, width - 100, height - 150);  // Keep the background box
+
+      const imageElement = document.getElementById("description-image");
+      imageElement.src = data.image;
+      imageElement.onerror = function() {
+          console.log("Image failed to load:", data.image);
+          this.src = '';  // Clear the image if it fails to load
+      };
+
+      let formattedText = data.text;
+      formattedText = formattedText.replace(kwicLine, `<strong>${kwicLine}</strong>`);
+      formattedText = formattedText.replace(word, `<span style="color: red;">${word}</span>`);
+
+      document.getElementById("description-text").innerHTML = formattedText;
+
+      const descriptionBox = document.getElementById("description-box");
+      descriptionBox.style.display = "block";
+
+      // Add the stopPropagation after the box is visible
+      descriptionBox.removeEventListener('click', stopPropagationHandler);  // Clean up previous listeners
+      descriptionBox.addEventListener('click', stopPropagationHandler);
+
+      // Remove any previous 'click outside' listener to avoid duplicate handling
+      document.removeEventListener('click', ClickOutDesc);
+
+      // Delay adding the click-outside handler to avoid closing the box on the same click that opens it
+      setTimeout(() => {
+          document.addEventListener('click', ClickOutDesc);
+      }, 1000);  // Slight delay to ensure this is not triggered by the initial click
   }
-  
-  function displayKeywordDetails(kwicLine) {
-    // Find the best matching key from kwicData
-    const closestMatch = Object.keys(kwicData).find(key => key.includes(kwicLine));
-
-    // If we find a match, display its content
-    if (closestMatch) {
-        const data = kwicData[closestMatch];
-
-        clear();  // Clear canvas (no KWIC text)
-        fill(226, 219, 201, 230);  // Background color for the box
-        noStroke();
-        rect(50, 80, width - 100, height - 150);  // Keep the background box
-
-        const imageElement = document.getElementById("description-image");
-        imageElement.src = data.image;
-        imageElement.onerror = function() {
-            console.log("Image failed to load:", data.image);
-            this.src = '';  // Clear the image if it fails to load
-        };
-
-        // Format description text
-        let formattedText = data.text;
-
-        // Bold the KWIC line
-        formattedText = formattedText.replace(kwicLine, `<strong>${kwicLine}</strong>`);
-
-        // Highlight the keyword in red
-        formattedText = formattedText.replace(word, `<span style="color: red;">${word}</span>`);
-
-        // Insert the formatted text into the description box (use innerHTML to preserve formatting)
-        document.getElementById("description-text").innerHTML = formattedText;
-
-        // Show the description box
-        document.getElementById("description-box").style.display = "block";
-    }
 }
 
-  
-  function clearDescriptionBox() {
-    document.getElementById("description-box").style.display = "none";
+function stopPropagationHandler(event) {
+  event.stopPropagation();  // Prevent the click from closing the description box
+}
+
+function clearDescriptionBox() {
+  document.getElementById("description-box").style.display = "none";
+
+  // Remove the event listener for clicking outside the description box
+  document.removeEventListener('click', ClickOutDesc);
+}
+
+function ClickOutDesc(event) {
+  const descriptionBox = document.getElementById("description-box");
+
+  // If clicked outside the description box, close it
+  if (!descriptionBox.contains(event.target)) {
+      clearDescriptionBox();
+      loop();  // Re-draw the canvas with the previous keyword lines
   }
+}
+
+function mousePressed() {
+  if (document.getElementById("description-box").style.display === "block") {
+      // If the description box is open, prevent any interaction with the keywords
+      return;
+  }
+
+  // Check if the mouse is clicked within any of the stored KWIC lines
+  for (let kwicLine of kwicLines) {
+      if (mouseX > kwicLine.xStart && mouseX < kwicLine.xEnd && mouseY > kwicLine.y - 12 && mouseY < kwicLine.y + 12) {
+          displayKeywordDetails(kwicLine.kwicLine);
+          break;
+      }
+  }
+}
+
   
   function createButtons() {
     const buttonContainer = document.getElementById('button-container');
