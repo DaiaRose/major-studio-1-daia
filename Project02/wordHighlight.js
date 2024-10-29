@@ -1,5 +1,4 @@
 
-
 let allLinks = [];
 
 for (let key in kwicData) {
@@ -28,7 +27,7 @@ console.log(allLinks);
   // Instead, we're working directly with kwicData for the KWIC visualization
   
   function setup() {
-    createCanvas(windowWidth * .9, windowHeight * 1);
+    createCanvas(windowWidth, windowHeight * 1);
     textFont('Times New Roman', 20);
   
     // RiTa concordance based on kwicData
@@ -42,22 +41,25 @@ console.log(allLinks);
   
   // Make the canvas resize when the window is resized
   function windowResized() {
-    resizeCanvas(windowWidth * .9, windowHeight * 1); 
+    resizeCanvas(windowWidth , windowHeight * 1); 
   }
   
   console.log("KWIC!", kwicData);
   
   function draw() {
     kwicLines = []; // Reset KWIC line boundaries for each draw call
-    background(255);
+    // background(0)
+    background(226, 219, 201);//this is background behind the whole pg 2 canvas
     
     // Set transparency for the background box behind text
-    fill(226, 219, 201, 230); // Background box behind text color matched
+    fill(226, 219, 201); // Background box behind kwic text color matched
+    // fill(0);
     noStroke();
-    rect(50, 80, width - 100, height - 150); // Draw a box for the text area
+    rect(50, 80, width - 50, height - 50); // Draw a box for the text area
   
     // Set text size and line spacing (leading)
-    textSize(20); // Adjust the text size as desired
+    textSize(25); // Adjust the text size as desired
+    textLeading(10); // Increase the line spacing (leading) to 40 pixels
     textFont('Iowan Old Style');
   
     // Get KWIC lines for the word
@@ -106,9 +108,11 @@ function displayKeywordDetails(kwicLine) {
       const data = kwicData[closestMatch];
 
       clear();  // Clear canvas (no KWIC text)
-      fill(226, 219, 201, 230);  // Background color for the box
+      // background(0)
+      background(226, 219, 201);  // Background color for the box
       noStroke();
-      rect(50, 80, width - 100, height - 150);  // Keep the background box
+      // rect(60, 80, width - 100, height - 150);  // Keep the background box
+      // fill(0);  // Background color for the box
 
       const imageElement = document.getElementById("description-image");
       imageElement.src = data.image;
@@ -176,7 +180,6 @@ function mousePressed() {
   }
 }
 
-  
   function createButtons() {
     const buttonContainer = document.getElementById('button-container');
     buttonContainer.innerHTML = '';  // Clear any existing buttons

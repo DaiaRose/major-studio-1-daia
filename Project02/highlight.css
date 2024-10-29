@@ -65,7 +65,7 @@ canvas {
 button {
     padding: 5px 10px;
     font-family: 'Iowan Old Style', serif;
-    font-size: 20px; 
+    font-size: 25px; 
     background-color: #fff;
     border: 1px solid #000;
     border-radius: 5px;
@@ -80,17 +80,18 @@ button {
     transform: translateX(-50%);
     width: 75%;
     padding: 20px;
-    background-color: rgba(226, 219, 201, 0.9);
-    border: 3px solid #000;
+    /* background-color: rgba(226, 219, 201, 0.9); */
+    border: 3px solid rgb(200,0,0);
     z-index: 10;
     display: none;  /* Ensure the description box is hidden by default */
 }
 
 /* Description text style */
 .description-box p {
-    font-size: 20px; 
+    vertical-align: text-top;
+    font-size: 25px; 
     font-family: 'Iowan Old Style', serif; 
-    color: #333; 
+    color: rgb(0, 0, 0); 
     line-height: 1.5;
 }
 
