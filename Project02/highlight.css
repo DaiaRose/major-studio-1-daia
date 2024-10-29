@@ -75,7 +75,7 @@ button {
 /* Description box */
 .description-box {
     position: absolute;
-    top: 7220px;
+    top: 820px;
     left: 50%;
     transform: translateX(-50%);
     width: 75%;
