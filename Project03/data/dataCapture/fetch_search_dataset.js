@@ -10,7 +10,7 @@ const searchBaseURL = "https://api.si.edu/openaccess/api/v1.0/search";
 
 // constructing the initial search query
 // const search =  'mask AND unit_code:"FSG"';
-const search =  `"Artists at or with their work"`;
+const search =  `object_type:"Cutlery" AND online_media_type:"Images"`;
 
 
 // array that we will write into
@@ -89,10 +89,10 @@ function fetchAllData(url) {
 
 function addObject(objectData) {  
 
-  let currentDate = "";
-  if(objectData.content.freetext.date) {
-    currentDate = objectData.content.freetext.date[0];
-  }
+  // let currentDate = "";
+  // if(objectData.content.freetext.date) {
+  //   currentDate = objectData.content.freetext.date[0];
+  // }
 
   // let currentDescription = [];
   // let sourceMaterials = objectData.content.freetext.physicalDescription;
@@ -107,14 +107,15 @@ function addObject(objectData) {
   myArray.push({
     id: objectData.id,
     title: objectData.title,
-    link: objectData.content.descriptiveNonRepeating.record_link,
-    date: currentDate,
-    description: objectData.content.freetext.physicalDescription
-    // description: currentDescription,
+    link: objectData.content.descriptiveNonRepeating.guid,
+    date: objectData.content.freetext.date,
+    description: objectData.content.freetext.physicalDescription,
+    place:objectData.content.freetext.place,
+    dept: objectData.unitCode
   })
 }
 fetchSearchData(search);
-//#919 has 6 descriptions. need to figure out looping over to add those strings
+
 
 
 //---------------------------UNIT CODES------------------------------

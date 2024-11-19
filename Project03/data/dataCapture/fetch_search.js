@@ -8,7 +8,7 @@ const apiKey = "Q29YvhpJBbII7uMQkrLTuC56ZgDWKhqa9bMLgZdd";
 const searchBaseURL = "https://api.si.edu/openaccess/api/v1.0/search";
 
 // Constructing the search query
-const search = `unit_code:"AAA"`;
+const search = `object_type:"Cutlery" AND online_media_type:"Images"`;
 
 const numRows = 2000;
 
