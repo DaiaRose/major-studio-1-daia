@@ -32,7 +32,7 @@ body {
 }
 
 .interactive .right-menu form::before {
-  content: "Size bars by:";
+  content: "dot filter:";
   display: block;
 }
 

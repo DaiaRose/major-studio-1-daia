@@ -22,8 +22,8 @@ let xScale, yScale, colorScale;
 // Custom scale for axis break
 function customScale(input) {
   const gapStart = 550;
-  const gapEnd = 1300;
-  const compressionFactor = 0.3; // Compression ratio for the gap
+  const gapEnd = 1450;
+  const compressionFactor = 0.1; // Compression ratio for the gap
 
   if (input <= gapStart) {
     return xScale(input); // Normal range before the gap
@@ -102,25 +102,39 @@ function onMouseEvent(event) {
 
 // Initialize layout
 function initializeLayout() {
-  const svgWidth = state.dimensions[0]; // Increase width for better spacing
+  const svgWidth = state.dimensions[0]; // Match grid column width
   const svgHeight = state.dimensions[1];
-  const margin = 80;
+  const margin = { top: 80, right: 80, bottom: 80, left: 80 };
+
+  // Calculate chart area dimensions
+  const chartWidth = svgWidth - margin.left - margin.right;
+  const chartHeight = svgHeight - margin.top - margin.bottom;
 
   const parent = d3.select(".interactive");
+
+  // Create the SVG
   const svg = parent
     .append("svg")
     .attr("width", svgWidth)
     .attr("height", svgHeight);
 
-  xScale = d3.scaleLinear().range([margin, svgWidth - margin]); // Domain will be set dynamically
-  yScale = d3.scaleLinear().range([svgHeight - margin, margin]);
+  // Add a group for the chart area and apply margins
+  const chart = svg
+    .append("g")
+    .attr("class", "chart-area")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+  // Define scales using chart area dimensions
+  xScale = d3.scaleLinear().range([0, chartWidth]);
+  yScale = d3.scaleLinear().range([chartHeight, 0]);
   colorScale = d3.scaleOrdinal(d3.schemeDark2);
 
-  // Add axes
-  svg.append("g").attr("class", "axis x-axis").attr("transform", `translate(0, ${svgHeight - margin})`);
-  svg.append("g").attr("class", "axis y-axis").attr("transform", `translate(${margin}, 0)`);
+  // Add axes groups
+  chart.append("g").attr("class", "axis x-axis").attr("transform", `translate(0, ${chartHeight})`);
+  chart.append("g").attr("class", "axis y-axis");
 
-  svg.append("g").attr("class", "dots");
+  // Add a group for dots
+  chart.append("g").attr("class", "dots");
 
   // Add menu to toggle grouping
   const rightMenu = parent.append("div").attr("class", "right-menu");
@@ -142,35 +156,70 @@ function initializeLayout() {
   parent.append("div").attr("class", "legend");
 }
 
+
 // Draw the visualization
 function draw() {
-  const groupedData = d3.group(state.data, d => d.year);
-  const years = Array.from(groupedData.keys()).sort((a, b) => a - b);
+  console.log("draw function is running");
+  // Get all years from the data
+  const allYears = state.data.map(d => d.year);
 
-  // Update xScale domain
-  xScale.domain([d3.min(state.data, d => d.year), d3.max(state.data, d => d.year)]);
+  // Compute the min and max years directly from the data
+  const minYear = d3.min(allYears);
+  const maxYear = d3.max(allYears);
+
+  // Log the min and max years to verify
+  console.log("Min Year:", minYear, "Max Year:", maxYear);
+
+  // Update xScale to use the full range of years
+  xScale.domain([minYear-5, maxYear+5]);
+
+  // Group data by year
+  const groupedData = d3.group(state.data, d => d.year);
+
+  // Update yScale based on the maximum count of items in any year
   yScale.domain([0, d3.max(groupedData.values(), v => v.length) || 0]);
 
-  // Clear existing axis and ticks
-  d3.select(".x-axis").selectAll("*").remove();
+  // Update axes
+  d3.select(".x-axis")
+    .call(d3.axisBottom(xScale).tickSizeOuter(0))
+    .attr("transform", `translate(0, ${yScale.range()[0]})`);
 
+  d3.select(".y-axis").call(d3.axisLeft(yScale).tickSizeOuter(0));
+
+  // Ensure dots align with customScale
+  const yearCounts = new Map();
+  const dots = d3
+    .select(".dots")
+    .selectAll("circle")
+    .data(state.data, d => d.id)
+    .join("circle")
+    .attr("cx", d => {
+      const scaledX = customScale(d.year);
+      console.log(`Dot Year: ${d.year}, Scaled X: ${scaledX}`); // Debug dot positions
+      return scaledX;
+    })
+    .attr("cy", d => {
+      const year = d.year;
+      if (!yearCounts.has(year)) yearCounts.set(year, 0);
+      const count = yearCounts.get(year);
+      yearCounts.set(year, count + 1);
+      return yScale(count);
+    })
+    .attr("r", 5)
+    .attr("fill", d => colorScale(d[state.groupBy.selected]))
+    .on("mouseenter", onMouseEvent)
+    .on("mouseleave", onMouseEvent);
+
+  // Check alignment with axis
   const xAxis = d3.select(".x-axis");
 
-  // Add the continuous x-axis line
-  xAxis
-    .append("line")
-    .attr("x1", customScale(d3.min(state.data, d => d.year)))
-    .attr("x2", customScale(d3.max(state.data, d => d.year)))
-    .attr("y1", 0)
-    .attr("y2", 0)
-    .attr("stroke", "black")
-    .attr("stroke-width", 1);
+  // Clear existing axis and ticks
+  xAxis.selectAll("*").remove();
 
   // Define tick values
-  const tickValues = [500, 550, 1300, 1400, 2000, ...years];
-  const tickLabels = tickValues.map(d => (d === 550 || d === 1300 ? "" : d)); // Hide labels at breaks
+  const tickValues = [minYear, 550, 1300, maxYear];
+  const tickLabels = tickValues.map(d => (d === 550 || d === 1300 ? "" : d));
 
-  // Add manual ticks and labels
   tickValues.forEach((value, i) => {
     const tickGroup = xAxis.append("g").attr("class", "tick");
 
@@ -186,58 +235,42 @@ function draw() {
       tickGroup
         .append("text")
         .attr("x", customScale(value))
-        .attr("y", 20) // Adjust distance from axis line
+        .attr("y", 20)
         .attr("text-anchor", "middle")
         .text(tickLabels[i]);
     }
   });
 
-  // Stacking logic for y position
-  const yearCounts = new Map();
-  const dots = d3
-    .select(".dots")
-    .selectAll("circle")
-    .data(state.data, d => d.id)
-    .join("circle")
-    .attr("cx", d => {
-      console.log("Dot Year:", d.year, "Custom Scaled X:", customScale(d.year));
-      return customScale(d.year);
-    })
-    .attr("cy", d => {
-      const year = d.year;
-      if (!yearCounts.has(year)) yearCounts.set(year, 0);
-      const count = yearCounts.get(year);
-      yearCounts.set(year, count + 1);
-      return yScale(count);
-    })
-    .attr("r", 5)
-    .attr("fill", d => colorScale(d[state.groupBy.selected]))
-    .on("mouseenter", onMouseEvent)
-    .on("mouseleave", onMouseEvent);
+  // Add the axis line
+  xAxis
+    .append("line")
+    .attr("x1", customScale(minYear))
+    .attr("x2", customScale(maxYear))
+    .attr("y1", 0)
+    .attr("y2", 0)
+    .attr("stroke", "black");
 
-  // Add axis break indicators (overlay zigzag markers)
-  d3.select("svg").selectAll(".break-line").remove();
+  // // Add axis break indicators
+  // const svg = d3.select("svg");
+  // svg.selectAll(".break-line").remove(); // Clear old indicators
 
-  // const breakMarkers = [
-  //   { position: 550, direction: 1 },
-  //   { position: 1300, direction: -1 },
-  // ];
+  // svg.append("line")
+  //   .attr("class", "break-line")
+  //   .attr("x1", customScale(550) - 5)
+  //   .attr("x2", customScale(550) + 5)
+  //   .attr("y1", yScale(0) - 10) // Slightly above x-axis
+  //   .attr("y2", yScale(0))
+  //   .attr("stroke", "black")
+  //   .attr("stroke-width", 1);
 
-  // breakMarkers.forEach(marker => {
-  //   const x = customScale(marker.position);
-  //   const y1 = -5 * marker.direction;
-  //   const y2 = 5 * marker.direction;
-
-  //   d3.select("svg")
-  //     .append("line")
-  //     .attr("class", "break-line")
-  //     .attr("x1", x - 5)
-  //     .attr("x2", x + 5)
-  //     .attr("y1", y1)
-  //     .attr("y2", y2)
-  //     .attr("stroke", "black")
-  //     .attr("stroke-width", 1);
-  // });
+  // svg.append("line")
+  //   .attr("class", "break-line")
+  //   .attr("x1", customScale(1300) - 5)
+  //   .attr("x2", customScale(1300) + 5)
+  //   .attr("y1", yScale(0) - 10)
+  //   .attr("y2", yScale(0))
+  //   .attr("stroke", "black")
+  //   .attr("stroke-width", 1);
 
   // Update legend
   const legendData = Array.from(new Set(state.data.map(d => d[state.groupBy.selected])));
@@ -254,6 +287,9 @@ function draw() {
       `
     );
 }
+
+
+
 
 
 // Load data and start visualization
