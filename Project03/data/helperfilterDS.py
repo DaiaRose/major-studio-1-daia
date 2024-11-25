@@ -40,11 +40,53 @@ def map_type(title, type_mapping):
     return None, None
 
 
-
 # Function to map material
 def map_material(materials, mapping):
     mapped = [mapping.get(material.split(' ')[0].lower(), material) for material in materials]
     return mapped[0] if mapped else None, mapped[1] if len(mapped) > 1 else None
+
+
+def extract_countries(place_content):
+    if not place_content:
+        return "Unknown"
+
+    # Normalize the input
+    place_content = place_content.strip().lower()
+
+    # Remove prefixes like "probably", "possibly"
+    place_content = re.sub(r"^(probably|possibly)\s+", "", place_content)
+
+    # Split the content into multiple places
+    parts = re.split(r"[\/,]| and ", place_content)  # Split on "/", "," or "and"
+    parts = [part.strip() for part in parts if part.strip()]  # Remove extra spaces and empty entries
+
+    # Special cases mapping
+    special_cases = {
+        "usa": "United States",
+        "california": "United States",
+        "new york, usa": "United States",
+        "england": "UK",
+        "united kingdom": "UK",
+        "world": "Global",
+        "europe": "Europe",
+        "eurasia": "Eurasia",
+        "africa": "Africa",
+        "austria-hungary": "Austria-Hungary",
+    }
+
+    # Normalize each part
+    cleaned_parts = []
+    for part in parts:
+        part = part.strip()
+        cleaned_parts.append(special_cases.get(part, part.title()))  # Title case for regular values
+
+    # If multiple countries are detected, join them with "or"
+    if len(cleaned_parts) > 1:
+        return " or ".join(cleaned_parts)
+
+    # Otherwise, return the single cleaned country
+    return cleaned_parts[0]
+
 
 
 # Helper function to process dates into a single year
@@ -154,13 +196,15 @@ def process_json(input_path, output_path):
 
         
         # Extract country
-        # Extract country
         places = [
             place.get("content", "") 
             for place in entry.get("place", []) 
             if place.get("label", "").lower() in ["place made", "place", "made in"]
         ]
-        country = places[-1].split(": ")[-1].strip() if places else None
+        countries = extract_countries(places[-1]) if places else "Unknown"
+
+
+
 
         
         # Append cleaned entry
@@ -171,7 +215,7 @@ def process_json(input_path, output_path):
             "material": material,
             "submaterial": submaterial,
             "year": year,
-            "country": country
+            "country": countries if isinstance(countries, list) else [countries]
         })
     
     # Write the cleaned data to a new JSON file

@@ -1,11 +1,9 @@
-const TOOLTIP_WIDTH = 150;
-const TOOLTIP_HEIGHT = 20;
 
 // Initial state
 let state = {
   data: [],
   groupBy: {
-    menu: ["type", "material", "county"],
+    menu: ["type", "material", "country"],
     selected: "type", // Default grouping
   },
   tooltip: {
@@ -47,9 +45,11 @@ async function dataLoad() {
   const data = await d3.json("cleaned_data.json");
 
   // Filter out entries with missing years or countries
-  const validData = data.filter(d => d.year !== null && d.country !== null && d.type !== null);
+  const validData = data.filter(d => d.year !== null && d.country && d.type !== null);
 
   console.log("Filtered Data:", validData);
+  console.log("Valid Data:", validData.map(d => d.country));
+
 
   setState({
     data: validData.map((d, i) => ({
@@ -58,6 +58,7 @@ async function dataLoad() {
     })),
   });
 }
+
 
 // Update state and redraw the visualization
 function setState(nextState) {
@@ -102,7 +103,7 @@ function onMouseEvent(event) {
 
 // Initialize layout
 function initializeLayout() {
-  const svgWidth = state.dimensions[0]; // Match grid column width
+  const svgWidth = state.dimensions[0]-200;
   const svgHeight = state.dimensions[1];
   const margin = { top: 80, right: 80, bottom: 80, left: 80 };
 
@@ -157,6 +158,7 @@ function initializeLayout() {
 }
 
 
+
 // Draw the visualization
 function draw() {
   console.log("draw function is running");
@@ -195,7 +197,9 @@ function draw() {
     .join("circle")
     .attr("cx", d => {
       const scaledX = customScale(d.year);
-      console.log(`Dot Year: ${d.year}, Scaled X: ${scaledX}`); // Debug dot positions
+      // console.log(`Dot Year: ${d.year}, Scaled X: ${scaledX}`); // Debug dot positions
+      
+
       return scaledX;
     })
     .attr("cy", d => {
@@ -206,7 +210,12 @@ function draw() {
       return yScale(count);
     })
     .attr("r", 5)
-    .attr("fill", d => colorScale(d[state.groupBy.selected]))
+    .attr("fill", d => {
+      console.log("Group By Selected:", state.groupBy.selected); // Check current grouping
+      console.log("Data Field Value:", d[state.groupBy.selected]); // Check the field value
+      return colorScale(d[state.groupBy.selected] || "Unknown"); // Fallback to 'Unknown' if undefined
+    })
+    
     .on("mouseenter", onMouseEvent)
     .on("mouseleave", onMouseEvent);
 
@@ -287,8 +296,6 @@ function draw() {
       `
     );
 }
-
-
 
 
 
