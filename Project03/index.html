@@ -6,8 +6,22 @@
     <link rel="stylesheet" type="text/css" href="./style.css" />
   </head>
   <body>
-    <div class="interactive"></div>
+    <!-- <div id="nav-buttons">
+      <button onclick="showView('view1')">View 1</button>
+      <button onclick="showView('view2')">View 2</button>
+    </div> -->
+      <div id="view1" class="interactive view active">
+        <!-- Chart container -->
+        <div id="chart-container"></div>
+      </div>
+      <div id="view2" class="interactive view">
+        <!-- Image gallery container -->
+        <div id="image-gallery"></div>
+      </div>
+      <div id="card" class="card"></div>
+    </div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="app.js"></script>
+    <script src="gallery.js"></script>
   </body>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="app.js"></script>
 </html>

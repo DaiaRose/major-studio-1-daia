@@ -1,6 +1,41 @@
+/* General styling for navigation and views */
 body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   overflow-x: hidden; /* Prevent body overflow issues */
+}
+
+#nav-buttons {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  color: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  z-index: 1000;
+}
+
+button {
+  color: white;
+  background-color: #555;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #777;
+}
+
+/* View management */
+.view {
+  display: none; /* Hidden by default */
+  width: 100%;
+  height: 100%;
+}
+
+.view.active {
+  display: flex; /* Show only the active view */
 }
 
 .interactive {
@@ -16,39 +51,47 @@ body {
   overflow: visible;
 }
 
-.interactive svg rect.highlight {
-  stroke-width: 1px;
-  stroke: white;
+/* Image gallery in View 2 */
+#image-gallery {
+  display: flex;
+  overflow-x: auto;
+  height: 100vh;
 }
 
-.interactive .right-menu {
-  flex-shrink: 0; /* Prevent shrinking if you use flex */
-  margin-left: auto; /* Position to the right if necessary */
+#image-gallery .row {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
 }
 
-.interactive .right-menu form::before {
-  content: "dot filter:";
+#image-gallery img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  margin: 5px;
+  cursor: pointer;
+}
+
+/* Card/modal styling */
+.card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  display: none;
+  z-index: 1001;
+}
+
+.card.active {
   display: block;
 }
 
-.interactive .right-menu .legend {
-  margin-top: 20px;
-}
-
-.interactive .right-menu .legend .legend-row {
-  height: 15px;
-}
-
-.interactive .right-menu .legend .legend-row .box {
-  width: 10px;
-  height: 10px;
-  display: inline-block;
-}
-
-.interactive .right-menu .legend .legend-row .legend-label {
-  display: inline-block;
-}
-
+/* Tooltip and right-menu */
 .interactive .tooltip.visible {
   visibility: visible;
 }
@@ -56,3 +99,4 @@ body {
 .interactive .tooltip:not(.visible) {
   visibility: hidden;
 }
+

@@ -18,6 +18,12 @@ let xScale, yScale, colorScale;
 
 // Load and process data
 async function dataLoad() {
+  // Only initialize chart if #view1 is active
+  if (!document.querySelector("#view1").classList.contains("active")) {
+    console.log("View 1 is not active. Skipping chart initialization.");
+    return;
+  }
+
   initializeLayout();
   const data = await d3.json("cleaned_data.json");
 
@@ -37,6 +43,8 @@ async function dataLoad() {
     })),
   });
 }
+
+
 
 // Update state and redraw the visualization
 function setState(nextState) {
@@ -79,12 +87,38 @@ function onMouseEvent(event) {
   }
 }
 
+
+function showView(viewId) {
+  // Hide all views
+  document.querySelectorAll('.view').forEach(view => {
+    view.classList.remove('active');
+  });
+
+  // Show the selected view
+  const activeView = document.getElementById(viewId);
+  activeView.classList.add('active');
+
+  // Handle view-specific behavior
+  if (viewId === "view1") {
+    // Initialize or redraw chart if not already present
+    const chartContainer = document.querySelector("#view1 svg");
+    if (!chartContainer) {
+      console.log("Initializing chart for View 1.");
+      dataLoad(); // Load data and initialize chart
+    }
+  } else {
+    console.log("View 2 is active. Chart is hidden.");
+  }
+}
+
+
+
 // Initialize layout
 function initializeLayout() {
-  const parentContainer = document.querySelector(".interactive");
+  const parentContainer = document.querySelector("#view1");
 
   if (!parentContainer) {
-    console.error("Parent container '.interactive' not found!");
+    console.error("Parent container '#view1' not found!");
     return;
   }
 
@@ -101,7 +135,7 @@ function initializeLayout() {
   state.chartWidth = chartWidth;
   state.chartHeight = chartHeight;
 
-  const parent = d3.select(".interactive");
+  const parent = d3.select("#view1");
 
   // Create the SVG
   const svg = parent
@@ -146,6 +180,7 @@ function initializeLayout() {
   // Add legend container
   parent.append("div").attr("class", "legend");
 }
+
 
 
 //axis break
@@ -200,27 +235,36 @@ function draw() {
         .tickFormat(() => "") // Remove tick labels
     )
     .attr("transform", `translate(0, ${yScale.range()[0]})`);
-    // Remove the default domain line
   d3.select(".x-axis .domain").remove();
 
   d3.select(".y-axis").call(d3.axisLeft(yScale).tickSizeOuter(0));
-  
+
   // Add a custom line for the visible axis
   const axisStart = customScale(minYear); // Start of the axis
   const axisEnd = customScale(maxYear);   // End of the axis
 
-d3.select(".x-axis")
-  .append("line")
-  .attr("x1", axisStart)
-  .attr("x2", axisEnd)
-  .attr("y1", 0)
-  .attr("y2", 0)
-  .attr("stroke", "black");
+  d3.select(".x-axis")
+    .append("line")
+    .attr("x1", axisStart)
+    .attr("x2", axisEnd)
+    .attr("y1", 0)
+    .attr("y2", 0)
+    .attr("stroke", "black");
+
+  // Tooltip div
+  const tooltip = d3.select("body").selectAll(".tooltip").data([null]).join("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("background", "white")
+    .style("border", "1px solid #ccc")
+    .style("padding", "5px")
+    .style("border-radius", "3px")
+    .style("pointer-events", "none")
+    .style("opacity", 0);
 
   // Render dots
   const yearCounts = new Map();
-  const dots = d3
-    .select(".dots")
+  d3.select(".dots")
     .selectAll("circle")
     .data(filteredData, d => d.id)
     .join("circle")
@@ -234,12 +278,33 @@ d3.select(".x-axis")
     })
     .attr("r", 5)
     .attr("fill", d => colorScale(d[state.groupBy.selected] || "Unknown"))
-    .on("mouseenter", onMouseEvent)
-    .on("mouseleave", onMouseEvent);
+    .on("mouseenter", (event, d) => {
+      // Update the tooltip state
+      onMouseEvent(event); // Call existing onMouseEvent for state updates
+      // Show the tooltip
+      tooltip
+        .style("opacity", 1)
+        .html(`
+          <strong>${state.groupBy.selected}:</strong> ${d[state.groupBy.selected]}<br>
+          <strong>Year:</strong> ${d.year}<br>
+          <strong>Country:</strong> ${d.country}
+        `);
+    })
+    .on("mousemove", event => {
+      tooltip
+        .style("left", `${event.pageX + 10}px`) // Offset to avoid cursor overlap
+        .style("top", `${event.pageY + 10}px`);
+    })
+    .on("mouseleave", event => {
+      // Hide the tooltip
+      tooltip.style("opacity", 0);
+      // Call existing onMouseEvent to clear state
+      onMouseEvent(event);
+    });
 
   // Add axis break indicator
   const breakX = xScale(560); // 
-  const breakY = yScale(-12.5); // idk why
+  const breakY = yScale(-12.5); // Adjusted for alignment
 
   d3.select("svg")
     .append("line")
@@ -274,6 +339,7 @@ d3.select(".x-axis")
       `
     );
 }
+
 
 
 
