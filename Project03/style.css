@@ -53,25 +53,35 @@ button:hover {
 
 /* Image gallery in View 2 */
 #image-gallery {
-  display: flex;
-  overflow-x: auto;
-  height: 100vh;
-}
-
-#image-gallery .row {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  flex: 1;
+  background-color: #E3E3B5; /* Optional background color */
+  display: grid; /* Use grid layout for rows and columns */
+  grid-template-rows: repeat(3, 200px); /* Three rows of fixed height */
+  grid-auto-flow: column; /* Flow items into columns for horizontal scrolling */
+  grid-gap: 10px; /* Space between images */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  overflow-y: hidden; /* Disable vertical scrolling */
+  max-height: calc(3 * 200px + 20px); /* Limit height for 3 rows with gaps */
+  width: 100%; /* Full width container */
+  padding: 10px;
+  box-sizing: border-box; /* Include padding in width/height calculations */
+  white-space: nowrap; /* Prevent wrapping */
 }
 
 #image-gallery img {
-  width: 200px;
-  height: 200px;
-  object-fit: cover;
-  margin: 5px;
-  cursor: pointer;
+  width: auto; /* Let width adjust dynamically */
+  height: 100%; /* Constrain height to the row size */
+  max-width: 200px; /* Limit maximum width of the image */
+  object-fit: contain; /* Ensure images fit without distortion */
+  cursor: pointer; /* Change cursor to pointer for interactivity */
+  display: block; /* Ensure no inline space issues */
+  border-radius: 5px; /* Optional: Rounded corners for aesthetics */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow for style */
 }
+
+#image-gallery img:hover {
+  transform: scale(1.05); /* Optional: Slight zoom on hover */
+}
+
 
 /* Card/modal styling */
 .card {
