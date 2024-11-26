@@ -48,22 +48,31 @@ def map_material(materials, mapping):
 
 def extract_countries(place_content):
     if not place_content:
-        return "Unknown"
+        return ["Unknown"]
+
+    # Debugging: log raw input
+    print(f"Raw Place Content: {place_content}")
 
     # Normalize the input
     place_content = place_content.strip().lower()
 
-    # Remove prefixes like "probably", "possibly"
-    place_content = re.sub(r"^(probably|possibly)\s+", "", place_content)
+    # Remove prefixes like "probably", "possibly", or "likely"
+    place_content = re.sub(r"^(probably|possibly|likely)\s+", "", place_content)
 
-    # Split the content into multiple places
+    # Handle cases like "United States: California"
+    if ":" in place_content:
+        place_content = place_content.split(":")[0].strip()  # Keep only the part before the colon
+
+    # Split the content into multiple places using delimiters: "/", ",", or "and"
     parts = re.split(r"[\/,]| and ", place_content)  # Split on "/", "," or "and"
     parts = [part.strip() for part in parts if part.strip()]  # Remove extra spaces and empty entries
 
     # Special cases mapping
     special_cases = {
         "usa": "United States",
+        "united states": "United States",
         "california": "United States",
+        "los angeles": "United States",
         "new york, usa": "United States",
         "england": "UK",
         "united kingdom": "UK",
@@ -74,18 +83,29 @@ def extract_countries(place_content):
         "austria-hungary": "Austria-Hungary",
     }
 
-    # Normalize each part
+    # Normalize each part and handle special cases
     cleaned_parts = []
     for part in parts:
-        part = part.strip()
-        cleaned_parts.append(special_cases.get(part, part.title()))  # Title case for regular values
+        # Map special cases or default to title case
+        cleaned_part = special_cases.get(part, part.title())
+        if cleaned_part not in cleaned_parts:
+            cleaned_parts.append(cleaned_part)
 
-    # If multiple countries are detected, join them with "or"
-    if len(cleaned_parts) > 1:
-        return " or ".join(cleaned_parts)
+    # Handle redundancy: If a broader category (e.g., "United States") exists, remove specifics
+    broader_categories = {"France", "UK", "United States", "Germany", "Netherlands", "Italy"}
+    filtered_parts = [
+        part for part in cleaned_parts 
+        if part not in broader_categories or not any(cat in cleaned_parts for cat in broader_categories)
+    ]
 
-    # Otherwise, return the single cleaned country
-    return cleaned_parts[0]
+    # Debugging: log cleaned results
+    print(f"Processed Places for '{place_content}': {filtered_parts}")
+
+    # Return all valid cleaned parts, or "Unknown" if empty
+    return filtered_parts if filtered_parts else ["Unknown"]
+
+
+
 
 
 
@@ -196,12 +216,19 @@ def process_json(input_path, output_path):
 
         
         # Extract country
+        # Extract and clean countries
+        # Extract places
         places = [
             place.get("content", "") 
             for place in entry.get("place", []) 
-            if place.get("label", "").lower() in ["place made", "place", "made in"]
+            if any(keyword in place.get("label", "").lower() for keyword in ["place", "place made", "made in"])
+
         ]
-        countries = extract_countries(places[-1]) if places else "Unknown"
+        countries = extract_countries(places[-1]) if places else ["Unknown"]
+
+
+
+
 
 
 
@@ -225,7 +252,7 @@ def process_json(input_path, output_path):
 
 # Paths to the JSON files
 input_json_path = 'cutleryOrig.json'  # Update this with the path to your input file
-output_json_path = 'cleaned_data.json'  # Update this with the desired output file path
+output_json_path = 'cleaned_data1.json'  # Update this with the desired output file path (1 had country better)
 
 # Process the data
 process_json(input_json_path, output_json_path)

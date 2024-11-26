@@ -1,18 +1,19 @@
 body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  overflow-x: hidden; /* Prevent body overflow issues */
 }
 
 .interactive {
-  display: grid;
+  display: flex;
   width: 100%;
-  height: 100%;
-  grid-template-columns: 1fr 3fr 1fr;
-  grid-template-rows: 1fr;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  height: auto; /* Ensure height adjusts to content */
 }
 
 .interactive svg {
-  grid-column: 2 / 3;
-  grid-row: 1;
+  flex-shrink: 0; /* Prevent SVG from shrinking */
+  display: block;
+  overflow: visible;
 }
 
 .interactive svg rect.highlight {
@@ -20,15 +21,9 @@ body {
   stroke: white;
 }
 
-.interactive .left-menu {
-  grid-column: 1 / 2;
-  grid-row: 1;
-}
-
-
 .interactive .right-menu {
-  grid-column: 3 / 4;
-  grid-row: 1;
+  flex-shrink: 0; /* Prevent shrinking if you use flex */
+  margin-left: auto; /* Position to the right if necessary */
 }
 
 .interactive .right-menu form::before {
@@ -43,6 +38,7 @@ body {
 .interactive .right-menu .legend .legend-row {
   height: 15px;
 }
+
 .interactive .right-menu .legend .legend-row .box {
   width: 10px;
   height: 10px;

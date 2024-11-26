@@ -1,4 +1,3 @@
-
 // Initial state
 let state = {
   data: [],
@@ -17,28 +16,6 @@ let state = {
 // Initialize scales globally
 let xScale, yScale, colorScale;
 
-// Custom scale for axis break
-function customScale(input) {
-  const gapStart = 550;
-  const gapEnd = 1450;
-  const compressionFactor = 0.1; // Compression ratio for the gap
-
-  if (input <= gapStart) {
-    return xScale(input); // Normal range before the gap
-  } else if (input > gapStart && input <= gapEnd) {
-    return (
-      xScale(gapStart) +
-      compressionFactor * (xScale(gapEnd) - xScale(gapStart)) * ((input - gapStart) / (gapEnd - gapStart))
-    ); // Compressed gap range
-  } else {
-    return (
-      xScale(gapStart) +
-      compressionFactor * (xScale(gapEnd) - xScale(gapStart)) +
-      (1 - compressionFactor) * (xScale(input) - xScale(gapEnd))
-    ); // Normal range after the gap
-  }
-}
-
 // Load and process data
 async function dataLoad() {
   initializeLayout();
@@ -48,8 +25,10 @@ async function dataLoad() {
   const validData = data.filter(d => d.year !== null && d.country && d.type !== null);
 
   console.log("Filtered Data:", validData);
-  console.log("Valid Data:", validData.map(d => d.country));
-
+  const earliest30Years = Array.from(new Set(validData.map(d => d.year)))
+    .sort((a, b) => a - b) // Sort ascending
+    .slice(0, 30); // Take the first 30
+  console.log("Earliest 30 Years:", earliest30Years);
 
   setState({
     data: validData.map((d, i) => ({
@@ -58,7 +37,6 @@ async function dataLoad() {
     })),
   });
 }
-
 
 // Update state and redraw the visualization
 function setState(nextState) {
@@ -103,13 +81,25 @@ function onMouseEvent(event) {
 
 // Initialize layout
 function initializeLayout() {
-  const svgWidth = state.dimensions[0]-200;
-  const svgHeight = state.dimensions[1];
+  const parentContainer = document.querySelector(".interactive");
+
+  if (!parentContainer) {
+    console.error("Parent container '.interactive' not found!");
+    return;
+  }
+
+  // Double the width
+  const svgWidth = Math.min((parentContainer.offsetWidth || state.dimensions[0]) * 2, 1600); // Cap at 1600px
+  const svgHeight = Math.min(state.dimensions[1], 600); // Cap height
   const margin = { top: 80, right: 80, bottom: 80, left: 80 };
 
   // Calculate chart area dimensions
   const chartWidth = svgWidth - margin.left - margin.right;
   const chartHeight = svgHeight - margin.top - margin.bottom;
+
+  // Store chart dimensions in state
+  state.chartWidth = chartWidth;
+  state.chartHeight = chartHeight;
 
   const parent = d3.select(".interactive");
 
@@ -158,50 +148,83 @@ function initializeLayout() {
 }
 
 
+//axis break
+function customScale(input) {
+  const gapStart = 510;
+  const gapEnd = 1540;
+  const lostyears = gapStart - gapEnd;
+  const gapWidth = 50; // Fixed width for the gap
 
-// Draw the visualization
+  if (input <= gapStart) {
+    return xScale(input); // Normal range before the gap
+  } else if (input >= gapEnd) {
+    return xScale(gapStart) + gapWidth + xScale(input) - xScale(gapEnd); // Normal range after the gap
+  }
+}
+
+
+
+// Updated draw 
 function draw() {
   console.log("draw function is running");
-  // Get all years from the data
-  const allYears = state.data.map(d => d.year);
 
-  // Compute the min and max years directly from the data
+  // Filter out data between 510 and 1540
+  const filteredData = state.data.filter(d => d.year <= 510 || d.year >= 1540);
+
+  // Get all years from the filtered data
+  const allYears = filteredData.map(d => d.year);
+
+  // Compute the min and max years
   const minYear = d3.min(allYears);
   const maxYear = d3.max(allYears);
 
-  // Log the min and max years to verify
-  console.log("Min Year:", minYear, "Max Year:", maxYear);
-
-  // Update xScale to use the full range of years
-  xScale.domain([minYear-5, maxYear+5]);
+  // Update xScale to use the full range of years and spread out the data
+  xScale.domain([minYear - 5, maxYear + 5]); // Adjust domain for padding
+  xScale.range([0, state.chartWidth * 2]); // Use state.chartWidth for spreading out data
 
   // Group data by year
-  const groupedData = d3.group(state.data, d => d.year);
+  const groupedData = d3.group(filteredData, d => d.year);
 
   // Update yScale based on the maximum count of items in any year
   yScale.domain([0, d3.max(groupedData.values(), v => v.length) || 0]);
 
   // Update axes
+  const tickValues = [500, 510, 1540, 1550, 1580, 1600]; // Explicit ticks
+  d3.select(".x-axis").selectAll("*").remove(); // Clear existing axis elements
+
   d3.select(".x-axis")
-    .call(d3.axisBottom(xScale).tickSizeOuter(0))
+    .call(
+      d3.axisBottom(xScale)
+        .tickValues(tickValues) // Explicitly set tick values
+        .tickSize(0) // Remove tick marks
+        .tickFormat(() => "") // Remove tick labels
+    )
     .attr("transform", `translate(0, ${yScale.range()[0]})`);
+    // Remove the default domain line
+  d3.select(".x-axis .domain").remove();
 
   d3.select(".y-axis").call(d3.axisLeft(yScale).tickSizeOuter(0));
+  
+  // Add a custom line for the visible axis
+  const axisStart = customScale(minYear); // Start of the axis
+  const axisEnd = customScale(maxYear);   // End of the axis
 
-  // Ensure dots align with customScale
+d3.select(".x-axis")
+  .append("line")
+  .attr("x1", axisStart)
+  .attr("x2", axisEnd)
+  .attr("y1", 0)
+  .attr("y2", 0)
+  .attr("stroke", "black");
+
+  // Render dots
   const yearCounts = new Map();
   const dots = d3
     .select(".dots")
     .selectAll("circle")
-    .data(state.data, d => d.id)
+    .data(filteredData, d => d.id)
     .join("circle")
-    .attr("cx", d => {
-      const scaledX = customScale(d.year);
-      // console.log(`Dot Year: ${d.year}, Scaled X: ${scaledX}`); // Debug dot positions
-      
-
-      return scaledX;
-    })
+    .attr("cx", d => customScale(d.year)) // Use customScale for x positioning
     .attr("cy", d => {
       const year = d.year;
       if (!yearCounts.has(year)) yearCounts.set(year, 0);
@@ -210,79 +233,34 @@ function draw() {
       return yScale(count);
     })
     .attr("r", 5)
-    .attr("fill", d => {
-      console.log("Group By Selected:", state.groupBy.selected); // Check current grouping
-      console.log("Data Field Value:", d[state.groupBy.selected]); // Check the field value
-      return colorScale(d[state.groupBy.selected] || "Unknown"); // Fallback to 'Unknown' if undefined
-    })
-    
+    .attr("fill", d => colorScale(d[state.groupBy.selected] || "Unknown"))
     .on("mouseenter", onMouseEvent)
     .on("mouseleave", onMouseEvent);
 
-  // Check alignment with axis
-  const xAxis = d3.select(".x-axis");
+  // Add axis break indicator
+  const breakX = xScale(560); // 
+  const breakY = yScale(-12.5); // idk why
 
-  // Clear existing axis and ticks
-  xAxis.selectAll("*").remove();
-
-  // Define tick values
-  const tickValues = [minYear, 550, 1300, maxYear];
-  const tickLabels = tickValues.map(d => (d === 550 || d === 1300 ? "" : d));
-
-  tickValues.forEach((value, i) => {
-    const tickGroup = xAxis.append("g").attr("class", "tick");
-
-    tickGroup
-      .append("line")
-      .attr("x1", customScale(value))
-      .attr("x2", customScale(value))
-      .attr("y1", 0)
-      .attr("y2", 6)
-      .attr("stroke", "black");
-
-    if (tickLabels[i]) {
-      tickGroup
-        .append("text")
-        .attr("x", customScale(value))
-        .attr("y", 20)
-        .attr("text-anchor", "middle")
-        .text(tickLabels[i]);
-    }
-  });
-
-  // Add the axis line
-  xAxis
+  d3.select("svg")
     .append("line")
-    .attr("x1", customScale(minYear))
-    .attr("x2", customScale(maxYear))
-    .attr("y1", 0)
-    .attr("y2", 0)
-    .attr("stroke", "black");
+    .attr("x1", breakX - 5)
+    .attr("x2", breakX + 5)
+    .attr("y1", breakY - 5)
+    .attr("y2", breakY + 5)
+    .attr("stroke", "black")
+    .attr("stroke-width", 1);
 
-  // // Add axis break indicators
-  // const svg = d3.select("svg");
-  // svg.selectAll(".break-line").remove(); // Clear old indicators
-
-  // svg.append("line")
-  //   .attr("class", "break-line")
-  //   .attr("x1", customScale(550) - 5)
-  //   .attr("x2", customScale(550) + 5)
-  //   .attr("y1", yScale(0) - 10) // Slightly above x-axis
-  //   .attr("y2", yScale(0))
-  //   .attr("stroke", "black")
-  //   .attr("stroke-width", 1);
-
-  // svg.append("line")
-  //   .attr("class", "break-line")
-  //   .attr("x1", customScale(1300) - 5)
-  //   .attr("x2", customScale(1300) + 5)
-  //   .attr("y1", yScale(0) - 10)
-  //   .attr("y2", yScale(0))
-  //   .attr("stroke", "black")
-  //   .attr("stroke-width", 1);
+  d3.select("svg")
+    .append("line")
+    .attr("x1", breakX + 5)
+    .attr("x2", breakX - 5)
+    .attr("y1", breakY - 5)
+    .attr("y2", breakY + 5)
+    .attr("stroke", "black")
+    .attr("stroke-width", 1);
 
   // Update legend
-  const legendData = Array.from(new Set(state.data.map(d => d[state.groupBy.selected])));
+  const legendData = Array.from(new Set(filteredData.map(d => d[state.groupBy.selected])));
   const legend = d3.select(".legend");
   legend
     .selectAll(".legend-row")
@@ -299,6 +277,8 @@ function draw() {
 
 
 
+
+
+
 // Load data and start visualization
 dataLoad();
-
