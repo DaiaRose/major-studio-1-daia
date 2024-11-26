@@ -64,7 +64,7 @@ button:hover {
   width: 100%; /* Full width container */
   padding: 10px;
   box-sizing: border-box; /* Include padding in width/height calculations */
-  white-space: nowrap; /* Prevent wrapping */
+  /* white-space: nowrap; Prevent wrapping */
 }
 
 #image-gallery img {
@@ -75,7 +75,6 @@ button:hover {
   cursor: pointer; /* Change cursor to pointer for interactivity */
   display: block; /* Ensure no inline space issues */
   border-radius: 5px; /* Optional: Rounded corners for aesthetics */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow for style */
 }
 
 #image-gallery img:hover {
@@ -89,24 +88,59 @@ button:hover {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  display: flex; /* Use flexbox for image and text alignment */
+  flex-direction: row; /* Align image and text side-by-side */
   background: white;
   border: 1px solid #ccc;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   padding: 20px;
   display: none;
   z-index: 1001;
+  max-width: 90%; /* Limit the card width for responsiveness */
+  max-height: 90%; /* Limit the card height for responsiveness */
+  overflow-y: auto; /* Enable scrolling if content exceeds height */
+  border-radius: 10px; /* Optional: Rounded corners for aesthetics */
 }
 
 .card.active {
-  display: block;
+  display: flex;
 }
 
-/* Tooltip and right-menu */
-.interactive .tooltip.visible {
-  visibility: visible;
+.card img.card-image {
+  width: 60%; /* Image takes 60% of the card width */
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 5px; /* Optional: Rounded corners for aesthetics */
+  margin-right: 20px; /* Add space between image and text */
 }
 
-.interactive .tooltip:not(.visible) {
-  visibility: hidden;
+.card .card-content {
+  width: 40%; /* Text takes 40% of the card width */
+  display: flex;
+  flex-direction: column; /* Stack text elements vertically */
+  justify-content: center; /* Vertically center the text */
 }
 
+.card h2 {
+  font-size: 1.8rem; /* Larger heading for prominence */
+  margin-top: 0; /* Remove margin at the top */
+}
+
+.card p {
+  margin: 10px 0; /* Add spacing between paragraphs */
+}
+
+.close-card-btn {
+  align-self: flex-start; /* Align the button to the top left of the text */
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #555;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.close-card-btn:hover {
+  background-color: #777;
+}
