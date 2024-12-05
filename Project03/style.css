@@ -29,15 +29,43 @@ body {
   background-color: #777;
 }
 
-/* View management */
 .view {
-  display: none; /* Hidden by default */
+  display: none; /* All views are hidden by default */
   width: 100%;
   height: 100%;
+  position: absolute; /* Position views on top of each other */
+  top: 0; /* Align at the top */
+  left: 0; /* Align at the left */
 }
 
-.view.active {
-  display: flex; /* Show only the active view */
+#view2.active {
+  display: block;
+  position: relative; /* Ensure normal document flow */
+  width: 100%;
+  height: 100%; /* Occupy full height of the viewport */
+  overflow-x: auto;
+  overflow-y: auto; /* Allow vertical scrolling for tall content */
+}
+
+#view1.active {
+  display: flex; /* Keep view1 as flex for its layout */
+}
+
+/* Title Section Styling */
+#title-section {
+  text-align: center; /* Center align the title and description */
+  background-color: #f9f9f9; /* Optional background color for contrast */
+  padding: 20px; /* Add padding around the content */
+  border-bottom: 1px solid #ddd; /* Optional border below the section */
+  width: 100%; /* Span the full width of the container */
+  box-sizing: border-box; /* Include padding in width calculation */
+  margin-bottom: 10px; /* Space between title and gallery */
+}
+
+/* Title Styling */
+#title-section h1 {
+  font-size: 2rem; /* Larger font for the title */
+  margin: 0; /* Remove default margin */
 }
 
 /* Parent container for the image gallery */
