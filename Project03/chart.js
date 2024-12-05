@@ -100,16 +100,20 @@ function showView(viewId) {
 
   // Handle view-specific behavior
   if (viewId === "view1") {
-    // Initialize or redraw chart if not already present
+    console.log("Switching to View 1.");
     const chartContainer = document.querySelector("#view1 svg");
     if (!chartContainer) {
       console.log("Initializing chart for View 1.");
       dataLoad(); // Load data and initialize chart
+    } else {
+      console.log("Chart already initialized.");
     }
-  } else {
-    console.log("View 2 is active. Chart is hidden.");
+  } else if (viewId === "view2") {
+    console.log("Switching to View 2.");
+    // Add any specific logic for View 2 if needed
   }
 }
+
 
 
 

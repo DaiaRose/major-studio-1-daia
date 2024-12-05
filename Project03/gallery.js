@@ -1,47 +1,56 @@
 // References
-const imageGallery = document.getElementById('image-gallery');
+const row1 = document.getElementById('row1');
+const row2 = document.getElementById('row2');
+const row3 = document.getElementById('row3');
 const card = document.getElementById('card');
 
 // Populate gallery with images
 async function populateGallery() {
   try {
-    // Fetch JSON data
-    const response = await fetch('cleaned_data.json'); // Adjust path if needed
+    console.log("Fetching data...");
+    const response = await fetch('cleaned_data.json');
     const imageData = await response.json();
 
-    imageData.forEach(async data => {
+    const imageLoadPromises = imageData.map(async (data) => {
+      const id = data.ID;
+      if (!id) return;
 
-      const id = data.ID; // Extract ID field
-      if (!id) {
-        console.warn("Missing ID for entry:", data);
-        return; // Skip entries without an ID
-      }
-
-      const imageUrl = `images/${id}.jpg`; // Construct the image path
-
-      // Validate the image exists before displaying
+      const imageUrl = `images/${id}.jpg`;
       const isValidImage = await checkImageExists(imageUrl);
-      if (!isValidImage) {
-        return; // Skip if the image doesn't exist
-      }
+      if (!isValidImage) return;
 
       const img = document.createElement('img');
       img.classList.add('image');
-      img.dataset.id = id; // Attach ID for easy lookup
-      img.loading = "lazy"; // Native lazy loading
-      img.src = imageUrl; // Set the image source
-      img.alt = data.type || "Untitled"; // Use type or fallback text
+      img.dataset.id = id;
+      img.src = imageUrl;
+      img.alt = data.type || "Untitled";
 
-      // Append image directly to the gallery
-      imageGallery.appendChild(img);
+      // Add lazy loading
+      img.loading = "lazy";
 
-      // Add click event for the card
+      // Add click event listener for the card
       img.addEventListener('click', () => showCard(data));
+
+      const rows = document.querySelectorAll('.image-row');
+      const shortestRow = Array.from(rows).sort((a, b) => a.children.length - b.children.length)[0];
+      shortestRow.appendChild(img);
+
+      return new Promise((resolve) => {
+        img.onload = resolve;
+      });
     });
+
+    await Promise.all(imageLoadPromises);
+    console.log("All images loaded, calling adjustGalleryWidth.");
+    setTimeout(() => {
+      adjustGalleryWidth();
+    }, 1000);
   } catch (error) {
-    console.error("Error loading gallery data:", error);
+    console.error("Error populating gallery:", error);
   }
 }
+
+
 
 // Function to check if an image exists
 async function checkImageExists(url) {
@@ -74,6 +83,35 @@ function closeCard() {
   const card = document.getElementById('card');
   card.classList.remove('active');
 }
+
+function adjustGalleryWidth() {
+  const imageGallery = document.getElementById('image-gallery');
+  const rows = imageGallery.querySelectorAll('.image-row');
+
+  if (rows.length > 0) {
+    console.log("Number of rows:", rows.length);
+    let totalWidth = 0;
+
+    rows.forEach((row, index) => {
+      console.log(`Row ${index + 1}:`, row);
+
+      const rowWidth = Array.from(row.children).reduce((width, img) => {
+        const imgWidth = img.getBoundingClientRect().width;
+        console.log(`Image width in Row ${index + 1}:`, imgWidth);
+        return width + imgWidth + 10; // Include gap
+      }, 0);
+
+      console.log(`Row ${index + 1} width:`, rowWidth);
+      totalWidth = Math.max(totalWidth, rowWidth);
+    });
+
+    console.log("Calculated total width:", totalWidth);
+    imageGallery.style.width = `${totalWidth}px`;
+  } else {
+    console.warn("No rows found in image-gallery.");
+  }
+}
+
 
 // Initialize the gallery
 populateGallery();

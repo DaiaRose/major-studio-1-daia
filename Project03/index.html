@@ -1,27 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MS1 Project in Progress</title>
     <link rel="stylesheet" type="text/css" href="./style.css" />
   </head>
   <body>
-    <!-- <div id="nav-buttons">
-      <button onclick="showView('view1')">View 1</button>
-      <button onclick="showView('view2')">View 2</button>
-    </div> -->
-      <div id="view1" class="interactive view active">
-        <!-- Chart container -->
-        <div id="chart-container"></div>
-      </div>
-      <div id="view2" class="interactive view">
-        <!-- Image gallery container -->
-        <div id="image-gallery"></div>
+    <!-- Navigation/Control Buttons -->
+    <div id="nav-buttons">
+      <button id="switch-view-btn">Switch View</button>
+    </div>
+
+    <!-- View 1: Chart -->
+    <div id="view1" class="interactive view active">
+      <div id="chart-container"></div>
+    </div>
+
+    <!-- View 2: Image Gallery -->
+    <div id="view2" class="interactive view">
+      <div id="image-gallery" class="image-gallery">
+        <div id="row1" class="image-row"></div>
+        <div id="row2" class="image-row"></div>
+        <div id="row3" class="image-row"></div>
       </div>
       <div id="card" class="card"></div>
     </div>
+
+    <!-- Scripts -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="app.js"></script>
+    <script src="main.js"></script>
+    <script src="chart.js"></script>
     <script src="gallery.js"></script>
   </body>
 </html>
