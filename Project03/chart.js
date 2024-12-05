@@ -18,7 +18,6 @@ let xScale, yScale, colorScale;
 
 // Load and process data
 async function dataLoad() {
-  // Only initialize chart if #view1 is active
   if (!document.querySelector("#view1").classList.contains("active")) {
     console.log("View 1 is not active. Skipping chart initialization.");
     return;
@@ -27,14 +26,7 @@ async function dataLoad() {
   initializeLayout();
   const data = await d3.json("cleaned_data.json");
 
-  // Filter out entries with missing years or countries
   const validData = data.filter(d => d.year !== null && d.country && d.type !== null);
-
-  console.log("Filtered Data:", validData);
-  const earliest30Years = Array.from(new Set(validData.map(d => d.year)))
-    .sort((a, b) => a - b) // Sort ascending
-    .slice(0, 30); // Take the first 30
-  console.log("Earliest 30 Years:", earliest30Years);
 
   setState({
     data: validData.map((d, i) => ({
@@ -42,8 +34,9 @@ async function dataLoad() {
       id: d.ID || `item_${i}`, // Ensure unique IDs
     })),
   });
-}
 
+  populateDropdowns(); // Populate the dropdown menus after loading data
+}
 
 
 // Update state and redraw the visualization
@@ -115,6 +108,45 @@ function showView(viewId) {
 }
 
 
+function populateDropdowns() {
+  const typeDropdown = d3.select("#typeDropdown");
+  const materialDropdown = d3.select("#materialDropdown");
+
+  // Get unique values for type and material
+  const types = Array.from(new Set(state.data.map(d => d.type)));
+  const materials = Array.from(new Set(state.data.map(d => d.material)));
+
+  // Populate type dropdown
+  typeDropdown
+    .selectAll("option")
+    .data(["All", ...types]) // Include "All" for no filtering
+    .join("option")
+    .attr("value", d => d)
+    .text(d => d);
+
+  // Populate material dropdown
+  materialDropdown
+    .selectAll("option")
+    .data(["All", ...materials]) // Include "All" for no filtering
+    .join("option")
+    .attr("value", d => d)
+    .text(d => d);
+}
+
+function onFilterChange() {
+  const selectedType = d3.select("#typeDropdown").property("value");
+  const selectedMaterial = d3.select("#materialDropdown").property("value");
+
+  // Filter data based on selections
+  const filteredData = state.data.filter(d => {
+    const matchesType = selectedType === "All" || d.type === selectedType;
+    const matchesMaterial = selectedMaterial === "All" || d.material === selectedMaterial;
+    return matchesType && matchesMaterial;
+  });
+
+  // Update state with filtered data
+  setState({ filteredData });
+}
 
 
 // Initialize layout
@@ -166,20 +198,24 @@ function initializeLayout() {
   chart.append("g").attr("class", "dots");
 
   // Add menu to toggle grouping
+// Add dropdown menus for filtering by type and material
 const rightMenu = parent.append("div").attr("class", "right-menu");
+
+// Create type dropdown
 rightMenu
-  .append("form")
-  .html(
-    state.groupBy.menu
-      .map(
-        d =>
-          `<input type="radio" name="groupby" value="${d}" ${
-            state.groupBy.selected === d ? "checked" : ""
-          }>${d}<br>`
-      )
-      .join("")
-  )
-  .on("change", onGroupByChange);
+  .append("label")
+  .text("Type: ")
+  .append("select")
+  .attr("id", "typeDropdown")
+  .on("change", onFilterChange); // Event listener for dropdown change
+
+// Create material dropdown
+rightMenu
+  .append("label")
+  .text("Material: ")
+  .append("select")
+  .attr("id", "materialDropdown")
+  .on("change", onFilterChange); // Event listener for dropdown change
 }
 
 
@@ -203,9 +239,11 @@ function customScale(input) {
 // Updated draw 
 function draw() {
   console.log("draw function is running");
-
+  
+  const dataToDraw = state.filteredData || state.data; // Use filtered data if available
+  
   // Filter out data between 510 and 1540
-  const filteredData = state.data.filter(d => d.year <= 510 || d.year >= 1540);
+  const filteredData = dataToDraw.filter(d => d.year <= 510 || d.year >= 1540);
 
   // Get all years from the filtered data
   const allYears = filteredData.map(d => d.year);
