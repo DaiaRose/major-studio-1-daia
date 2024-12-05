@@ -14,7 +14,7 @@ body {
   display: flex;
   justify-content: flex-start; /* Align button to the left */
   padding: 10px;
-  z-index: 1000;
+  z-index: 1;
 }
 
 #nav-buttons button {
@@ -38,6 +38,17 @@ body {
   left: 0; /* Align at the left */
 }
 
+
+#view1.active {
+  display: flex; /* Keep view1 as flex for its layout */
+}
+
+.right-menu {
+  position: relative; /* Adjust as needed (e.g., absolute, fixed) */
+  z-index: 10; /* Higher than .nav-buttons */
+}
+
+
 #view2.active {
   display: block;
   position: relative; /* Ensure normal document flow */
@@ -46,11 +57,6 @@ body {
   overflow-x: auto;
   overflow-y: auto; /* Allow vertical scrolling for tall content */
 }
-
-#view1.active {
-  display: flex; /* Keep view1 as flex for its layout */
-}
-
 /* Title Section Styling */
 #title-section {
   text-align: center; /* Center align the title and description */

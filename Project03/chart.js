@@ -2,7 +2,7 @@
 let state = {
   data: [],
   groupBy: {
-    menu: ["type", "material", "country"],
+    menu: ["type", "material"],
     selected: "type", // Default grouping
   },
   tooltip: {
@@ -166,23 +166,20 @@ function initializeLayout() {
   chart.append("g").attr("class", "dots");
 
   // Add menu to toggle grouping
-  const rightMenu = parent.append("div").attr("class", "right-menu");
-  rightMenu
-    .append("form")
-    .html(
-      state.groupBy.menu
-        .map(
-          d =>
-            `<input type="radio" name="groupby" value="${d}" ${
-              state.groupBy.selected === d ? "checked" : ""
-            }>${d}<br>`
-        )
-        .join("")
-    )
-    .on("change", onGroupByChange);
-
-  // Add legend container
-  parent.append("div").attr("class", "legend");
+const rightMenu = parent.append("div").attr("class", "right-menu");
+rightMenu
+  .append("form")
+  .html(
+    state.groupBy.menu
+      .map(
+        d =>
+          `<input type="radio" name="groupby" value="${d}" ${
+            state.groupBy.selected === d ? "checked" : ""
+          }>${d}<br>`
+      )
+      .join("")
+  )
+  .on("change", onGroupByChange);
 }
 
 
