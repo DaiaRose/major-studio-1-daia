@@ -67,16 +67,22 @@ async function checkImageExists(url) {
 
 function showCard(data) {
   card.innerHTML = `
-    <img src="images/${data.ID}.jpg" alt="${data.type || 'Untitled'}" class="card-image">
-    <h2>${data.type || "Untitled"}</h2>
-    <p><strong>Subtype:</strong> ${data.subtype || "Unknown"}</p>
-    <p><strong>Material:</strong> ${data.submaterial || "Unknown"}</p>
-    <p><strong>Year:</strong> ${data.year || "Unknown"}</p>
-    <p><strong>Country:</strong> ${data.country || "Unknown"}</p>
-    <button onclick="closeCard()" class="close-card-btn">Close</button>
+    <div class="card-content">
+      <img src="images/${data.ID}.jpg" alt="${data.type || 'Untitled'}" class="card-image">
+      <div class="card-text">
+        <h2>${data.type || "Untitled"}</h2>
+        <p><strong>Subtype:</strong> ${data.subtype || "Unknown"}</p>
+        <p><strong>Material:</strong> ${data.submaterial || "Unknown"}</p>
+        <p><strong>Year:</strong> ${data.year || "Unknown"}</p>
+        <p><strong>Country:</strong> ${data.country || "Unknown"}</p>
+      </div>
+    </div>
+    <button onclick="closeCard()" class="close-card-btn">×</button>
   `;
   card.classList.add('active');
 }
+
+
 
 
 function closeCard() {
