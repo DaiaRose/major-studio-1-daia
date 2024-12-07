@@ -118,22 +118,33 @@ async function checkImageExists(url) {
 }
 
 function showCard(data) {
-  // Create a new image element to measure dimensions
+  // Department mapping
+  const deptMapping = {
+    CHNDM: "Cooper-Hewitt, National Design Museum",
+    NMAH: "Smithsonian National Museum of American History",
+  };
+
   const tempImg = new Image();
   tempImg.src = data.image;
 
   tempImg.onload = () => {
     const isWide = tempImg.width >= 1.5 * tempImg.height;
 
-    // Apply appropriate layout based on the image's aspect ratio
     card.innerHTML = `
       <div class="card-content ${isWide ? 'wide-layout' : 'normal-layout'}">
+        <!-- Custom Arrow Icon Link -->
+        <a href="${data.link}" target="_blank" class="card-link">
+          <img src="arrow-up.svg" alt="External Link" class="custom-arrow">
+        </a>
         <img src="${data.image}" alt="${data.title || 'Untitled'}" class="card-image">
         <div class="card-text">
           <h2>${data.title || "Untitled"}</h2>
+          <p>${data.year || "Unknown Year"} <strong>○</strong> ${data.country || "Unknown Country"}</p>
           <p><strong>Material:</strong> ${data.submaterial || "Unknown"}</p>
-          <p><strong>Year:</strong> ${data.year || "Unknown"}</p>
-          <p><strong>Country:</strong> ${data.country || "Unknown"}</p>
+          <p><strong>Museum:</strong> ${
+            deptMapping[data.dept] || "Unknown Department"
+          }</p>
+          <p><strong>Length:</strong> ${data.length ? `${data.length} cm` : "Unknown"}</p>
         </div>
       </div>
       <button onclick="closeCard()" class="close-card-btn">×</button>
@@ -142,6 +153,7 @@ function showCard(data) {
     card.classList.add('active');
   };
 }
+
 
 
 

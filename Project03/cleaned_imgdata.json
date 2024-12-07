@@ -1113,24 +1113,6 @@
         "small_image": "https://ids.si.edu/ids/deliveryService?id=CHSDM-90D475E92C542-000001&max=300"
     },
     {
-        "ID": "ld1-1643399887910-1643399891131-0",
-        "title": "Still life",
-        "type": null,
-        "subtype": null,
-        "material": "unknown",
-        "submaterial": "graphite on wove paper",
-        "length": 4.5625,
-        "width": 6.5625,
-        "year": null,
-        "country": [
-            "Usa"
-        ],
-        "link": "http://n2t.net/ark:/65665/kq4d8def59c-3157-40a7-83e3-3aa99161f819",
-        "dept": "CHNDM",
-        "image": "https://ids.si.edu/ids/deliveryService?id=CHSDM-9C5635D7E0032-000001",
-        "small_image": "https://ids.si.edu/ids/deliveryService?id=CHSDM-9C5635D7E0032-000001&max=300"
-    },
-    {
         "ID": "ld1-1643399887910-1643399892345-0",
         "title": "spoon",
         "type": "spoon",
@@ -5872,24 +5854,6 @@
         "dept": "CHNDM",
         "image": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CHA2346",
         "small_image": "https://ids.si.edu/ids/deliveryService?id=CHSDM-CHA2346&max=300"
-    },
-    {
-        "ID": "ld1-1643399887910-1643399947181-0",
-        "title": "Angel in the Church of the Ges\u00f9",
-        "type": null,
-        "subtype": null,
-        "material": "unknown",
-        "submaterial": "red chalk on paper",
-        "length": null,
-        "width": null,
-        "year": null,
-        "country": [
-            "France"
-        ],
-        "link": "http://n2t.net/ark:/65665/kq47dec8699-6978-4109-976e-1df4886d4c99",
-        "dept": "CHNDM",
-        "image": "https://ids.si.edu/ids/deliveryService?id=CHSDM-156822_01-000001",
-        "small_image": "https://ids.si.edu/ids/deliveryService?id=CHSDM-156822_01-000001&max=300"
     },
     {
         "ID": "ld1-1643399887910-1643399922402-0",

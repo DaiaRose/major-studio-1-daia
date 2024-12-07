@@ -381,10 +381,5 @@ function draw() {
 }
 
 
-
-
-
-
-
 // Load data and start visualization
 dataLoad();

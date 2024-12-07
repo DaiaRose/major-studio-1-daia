@@ -30,6 +30,5 @@ function showView(viewId) {
     showView(nextView);
   });
   
-  
-
+    
   

@@ -39,7 +39,7 @@ body {
   left: 0; /* Align at the left */
 }
 
-
+/* #region Chart Styling */
 #view1.active {
   display: flex; /* Keep view1 as flex for its layout */
 }
@@ -49,6 +49,7 @@ body {
   z-index: 10; /* Higher than .nav-buttons */
 }
 
+/* #endregion */
 
 /* Main view setup */
 #view2.active {
@@ -85,6 +86,9 @@ body {
   font-size: 2rem; /* Larger font for the title */
   margin: 0; /* Remove default margin */
 }
+
+/* #region Image Gallery Styles */
+
 
 /* Parent container for the image gallery */
 .image-gallery {
@@ -171,7 +175,9 @@ body {
   outline: none; /* Remove focus outline */
   background: linear-gradient(to right, #777, #ccc); /* Slightly darker track on focus */
 }
+/* #endregion */
 
+/* #region Card Styles */
 /* Card/modal styling */
 .card {
   position: fixed;
@@ -236,7 +242,7 @@ body {
   width: auto; /* Image width adjusts to its natural size */
   max-width: 90%; /* Prevent image from exceeding 90% of the card width */
   height: auto; /* Maintain aspect ratio */
-  max-height: 70%; /* Prevent image from exceeding 70% of the card height */
+  max-height: 60%; /* Prevent image from exceeding 70% of the card height */
   object-fit: contain; /* Ensure the image fits without distortion */
   margin: 0 auto; /* Center the image horizontally */
   display: block; /* Ensure predictable layout behavior */
@@ -280,3 +286,24 @@ body {
 .close-card-btn:hover {
   background-color: #777;
 }
+
+.card-link {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  text-decoration: none;
+}
+
+.custom-arrow {
+  width: 24px; /* Adjust the size of the icon */
+  height: 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.card-link:hover .custom-arrow {
+  transform: scale(1.2); /* Slight zoom effect on hover */
+}
+
+/* #endregion */
