@@ -10,7 +10,7 @@ const searchBaseURL = "https://api.si.edu/openaccess/api/v1.0/search";
 
 // constructing the initial search query
 // const search =  'mask AND unit_code:"FSG"';
-const search =  `object_type:"Cutlery" AND online_media_type:"Images"`;
+const search =  `object_type:"Cutlery" AND online_visual_material:true`;
 
 
 // array that we will write into
@@ -108,11 +108,13 @@ function addObject(objectData) {
     id: objectData.id,
     title: objectData.title,
     link: objectData.content.descriptiveNonRepeating.guid,
-    date: objectData.content.freetext.date,
-    description: objectData.content.freetext.physicalDescription,
-    place:objectData.content.freetext.place,
-    dept: objectData.unitCode
-  })
+    date: objectData.content.freetext.date || [],
+    description: objectData.content.freetext.physicalDescription || [],
+    place: objectData.content.freetext.place || [],
+    dept: objectData.unitCode,
+    image: objectData.content.descriptiveNonRepeating.online_media?.media[0]?.content || null,
+  });
+  
 }
 fetchSearchData(search);
 

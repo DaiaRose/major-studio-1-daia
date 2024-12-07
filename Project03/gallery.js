@@ -8,14 +8,16 @@ const card = document.getElementById('card');
 async function populateGallery() {
   try {
     console.log("Fetching data...");
-    const response = await fetch('cleaned_data.json');
+    const response = await fetch('cleaned_imgdata.json');
     const imageData = await response.json();
 
     const imageLoadPromises = imageData.map(async (data) => {
       const id = data.ID;
       if (!id) return;
 
-      const imageUrl = `images/${id}.jpg`;
+      // Use the new image link from the JSON file
+      const imageUrl = `${data.small_image}`;
+
       const isValidImage = await checkImageExists(imageUrl);
       if (!isValidImage) return;
 
@@ -51,7 +53,6 @@ async function populateGallery() {
 }
 
 
-
 // Function to check if an image exists
 async function checkImageExists(url) {
   try {
@@ -68,10 +69,9 @@ async function checkImageExists(url) {
 function showCard(data) {
   card.innerHTML = `
     <div class="card-content">
-      <img src="images/${data.ID}.jpg" alt="${data.type || 'Untitled'}" class="card-image">
+      <img src="images/${data.ID}.jpg" alt="${data.title || 'Untitled'}" class="card-image">
       <div class="card-text">
-        <h2>${data.type || "Untitled"}</h2>
-        <p><strong>Subtype:</strong> ${data.subtype || "Unknown"}</p>
+        <h2>${data.title || "Untitled"}</h2>
         <p><strong>Material:</strong> ${data.submaterial || "Unknown"}</p>
         <p><strong>Year:</strong> ${data.year || "Unknown"}</p>
         <p><strong>Country:</strong> ${data.country || "Unknown"}</p>

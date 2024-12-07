@@ -9,107 +9,55 @@ type_mapping = {
     'knife': ['knife', 'Knife', 'Knives'],
     'fork': ['fork', 'Fork', '"Tipsy Tavener"'],
     'spoon': ['spoon', 'Ladle', 'ladle', 'Spoon'],
-    'stick': ['skewer', 'Skewer', 'Toothpick', 'nutpick','Chopsticks', 'Chopstick','chopstick', 'chopsticks'],
+    'stick': ['skewer', 'Skewer', 'Toothpick', 'nutpick', 'Chopsticks', 'Chopstick', 'chopstick', 'chopsticks'],
     'utensil': ['Server', 'spreader', 'Spreader', 'Scoop', 'Sifter', 'Shears', 'corkscrew', 'Scraper', 'tongs', 'Tongs', 'Strainer', 'Peeler', 'peeler', 'pliers']
 }
 
 material_mapping = {
     'animal': ['ivory', 'antler', 'bone', 'skin', 'sharkskin', 'hoof', 'leather', 'horn'],
-    'plant': ['wood', 'fiber'],
+    'plant': ['wood', 'fiber', 'paper'],
     'metal': ['steel', 'silver', 'brass', 'gold', 'pewter', 'copper', 'metal'],
     'shell': ['pearl', 'shell', 'tortoise'],
     'other': ['lacquer', 'porcelain', 'stone', 'plastic', 'enamel', 'glass'],
 }
 
+from fractions import Fraction
+
+# Helper function to convert dimensions to float
+def convert_to_float(value):
+    try:
+        # Handle mixed fractions like "7 1/2"
+        if " " in value:
+            whole, fraction = value.split()
+            return float(whole) + float(Fraction(fraction))
+        # Handle simple fractions like "1/2"
+        elif "/" in value:
+            return float(Fraction(value))
+        # Handle whole numbers
+        else:
+            return float(value)
+    except ValueError:
+        return None
+
+
 # Function to map type
 def map_type(title, type_mapping):
-    title_lower = title.lower()  # Normalize the title to lowercase
-    matched_types = []
-    matched_subtypes = []
-
+    title_lower = title.lower()
     for type_category, keywords in type_mapping.items():
         for keyword in keywords:
-            if keyword.lower() in title_lower:  # Check if the keyword exists in the title
-                matched_types.append(type_category)
-                matched_subtypes.append(keyword.lower())
-                break  # Stop after finding a match for the current category
-
-    if matched_types:
-        # Return the first matched type and the associated subtype
-        return matched_types[0], matched_subtypes[0] if matched_subtypes else None
+            if keyword.lower() in title_lower:
+                return type_category, keyword.lower()
     return None, None
-
 
 # Function to map material
 def map_material(materials, mapping):
-    mapped = [mapping.get(material.split(' ')[0].lower(), material) for material in materials]
-    return mapped[0] if mapped else None, mapped[1] if len(mapped) > 1 else None
+    for mat in materials:
+        for category, keywords in mapping.items():
+            if mat in keywords:
+                return category
+    return "unknown"
 
-
-def extract_countries(place_content):
-    if not place_content:
-        return ["Unknown"]
-
-    # Debugging: log raw input
-    print(f"Raw Place Content: {place_content}")
-
-    # Normalize the input
-    place_content = place_content.strip().lower()
-
-    # Remove prefixes like "probably", "possibly", or "likely"
-    place_content = re.sub(r"^(probably|possibly|likely)\s+", "", place_content)
-
-    # Handle cases like "United States: California"
-    if ":" in place_content:
-        place_content = place_content.split(":")[0].strip()  # Keep only the part before the colon
-
-    # Split the content into multiple places using delimiters: "/", ",", or "and"
-    parts = re.split(r"[\/,]| and ", place_content)  # Split on "/", "," or "and"
-    parts = [part.strip() for part in parts if part.strip()]  # Remove extra spaces and empty entries
-
-    # Special cases mapping
-    special_cases = {
-        "usa": "United States",
-        "united states": "United States",
-        "california": "United States",
-        "los angeles": "United States",
-        "new york, usa": "United States",
-        "england": "UK",
-        "united kingdom": "UK",
-        "world": "Global",
-        "europe": "Europe",
-        "eurasia": "Eurasia",
-        "africa": "Africa",
-        "austria-hungary": "Austria-Hungary",
-    }
-
-    # Normalize each part and handle special cases
-    cleaned_parts = []
-    for part in parts:
-        # Map special cases or default to title case
-        cleaned_part = special_cases.get(part, part.title())
-        if cleaned_part not in cleaned_parts:
-            cleaned_parts.append(cleaned_part)
-
-    # Handle redundancy: If a broader category (e.g., "United States") exists, remove specifics
-    broader_categories = {"France", "UK", "United States", "Germany", "Netherlands", "Italy"}
-    filtered_parts = [
-        part for part in cleaned_parts 
-        if part not in broader_categories or not any(cat in cleaned_parts for cat in broader_categories)
-    ]
-
-    # Debugging: log cleaned results
-    print(f"Processed Places for '{place_content}': {filtered_parts}")
-
-    # Return all valid cleaned parts, or "Unknown" if empty
-    return filtered_parts if filtered_parts else ["Unknown"]
-
-
-
-
-
-
-# Helper function to process dates into a single year
+# Function to process dates into a single year
 def process_date(date_content):
     date_content = date_content.lower().strip()  # Normalize the string
 
@@ -117,144 +65,146 @@ def process_date(date_content):
     if re.match(r"^\d{4}$", date_content):
         return int(date_content)
 
-    # Match a year range (e.g., "1595–1700") and take the first year
-    if re.match(r"^\d{4}–\d{4}$", date_content):
-        start_year = int(date_content.split("–")[0])
+    # Match a year range (e.g., "1809–19" or "1809–1819") and take the first year
+    if re.match(r"^\d{4}\s*[-–]\s*\d{2,4}$", date_content):
+        years = re.split(r"[-–]", date_content)  # Use re.split for regex
+        start_year = int(years[0].strip())
         return start_year
 
-    # Match approximate ranges (e.g., "ca. 1595–1700")
+    # Match approximate single year (e.g., "ca. 1893")
     if date_content.startswith(("ca ", "ca.", "c. ")):
-        cleaned_content = re.sub(r"(ca\. |ca |c\. )", "", date_content).strip()  # Remove approximation
-        if "–" in cleaned_content:  # Handle range in approximated dates
-            start_year = int(cleaned_content.split("–")[0])
-            return start_year
-        if cleaned_content.isdigit():  # Handle single approximated year
-            return int(cleaned_content)
-
-    # Match approximate single year (e.g., "ca 1893", "c. 1893")
-    if date_content.startswith(("ca ", "c. ")):
-        approx_year = re.sub(r"(ca |c\. )", "", date_content).strip()
+        approx_year = re.sub(r"(ca |ca\.|c\. )", "", date_content).strip()
         if approx_year.isdigit():
             return int(approx_year)
 
-    # Match centuries (e.g., "19th century")
-    century_match = re.match(r"^(\d{1,2})(st|nd|rd|th) century$", date_content)
+    # Match centuries (e.g., "19th century", "mid-19th century")
+    century_match = re.match(r"^(early|mid|late)?\s*(\d{1,2})(st|nd|rd|th)? century$", date_content)
     if century_match:
-        century = int(century_match.group(1))
-        year = (century - 1) * 100
-        return year
+        period, century, _ = century_match.groups()
+        base_year = (int(century) - 1) * 100
+        if period == "early":
+            return base_year + 25
+        elif period == "mid":
+            return base_year + 50
+        elif period == "late":
+            return base_year + 75
+        return base_year
+
+    # Match centuries with multiple periods (e.g., "early–mid-19th century")
+    multi_period_century_match = re.match(r"^(early|mid|late)[-–](early|mid|late)?\s*(\d{1,2})(st|nd|rd|th)? century$", date_content)
+    if multi_period_century_match:
+        first_period, _, century, _ = multi_period_century_match.groups()
+        base_year = (int(century) - 1) * 100
+
+        # Use the first period's year as the representative year
+        period_years = {
+            "early": base_year + 25,
+            "mid": base_year + 50,
+            "late": base_year + 75,
+        }
+        return period_years.get(first_period, base_year)
 
     # Match decades (e.g., "2010s")
     decade_match = re.match(r"^(\d{4})s$", date_content)
     if decade_match:
-        decade_start_year = int(decade_match.group(1))
-        return decade_start_year
+        return int(decade_match.group(1))
 
     # Default fallback for unrecognized formats
     return None
 
+# Function to extract countries
+def extract_countries(place_content):
+    if not place_content:
+        return ["Unknown"]
+    place_content = re.sub(r"^(probably|possibly|likely)\s+", "", place_content.strip().lower())
+    return [place_content.title()]
 
-
-
-
-
-
-
-
-
-
-# Process the JSON file
-# Updated processing logic for dates
+# Processing function
 def process_json(input_path, output_path):
     with open(input_path, 'r') as infile:
         raw_data = json.load(infile)
     
     cleaned_data = []
     for entry in raw_data:
-        ID = entry["id"]
-        title = entry["title"]
-        
+        ID = entry.get("id", "Unknown")
+        title = entry.get("title", "Unknown")
+        link = entry.get("link", "")
+        image = entry.get("image", "")
+        dept = entry.get("dept", "Unknown")
+
         # Map type and subtype
         type_, subtype = map_type(title, type_mapping)
 
-        
-
-
         # Extract and classify materials
         materials = []
+        length, width = None, None  # Only length and width are needed
         for desc in entry.get("description", []):
             if desc.get("label", "").lower() in ["physical description", "medium"]:
-                # Split materials by commas or "and"
-                raw_materials = re.split(r",\s*| and ", desc["content"])
-                # Remove annotations in parentheses and clean up whitespace
+                raw_materials = re.split(r",\s*| and ", desc.get("content", ""))
                 materials.extend([re.sub(r"\s*\(.*?\)", "", mat).strip().lower() for mat in raw_materials])
-
-        # Classify materials using the material_mapping
-        classified_materials = []
-        for mat in materials:
-            found_category = None
-            for category, keywords in material_mapping.items():
-                if mat in keywords:
-                    found_category = category
-                    break
-            classified_materials.append(found_category if found_category else "unknown")
-
-        # Assign the first classified material as the primary material
-        material = classified_materials[0] if classified_materials else "unknown"
-        submaterial = ", ".join(materials) if materials else ""
+            if desc.get("label", "").lower() == "dimensions":
+                dimensions_match = re.search(r"\(([^)]+)\)", desc.get("content", ""))
+                if dimensions_match:
+                    dimensions = dimensions_match.group(1)
+                    # Extract length and width, ignoring depth
+                    dims = re.findall(r"[\d\s./]+", dimensions)  # Match numbers, spaces, and fractions
+                    if len(dims) >= 1:
+                        length = convert_to_float(dims[0])  # First value is length
+                    if len(dims) >= 2:
+                        width = convert_to_float(dims[1])  # Second value is width
 
 
-        
+        material = map_material(materials, material_mapping)
+        submaterials = ", ".join(materials)
+
         # Process dates
         date_data = entry.get("date", [])
         year = None
         for date in date_data:
-            if date.get("label", "").lower() in ["date made", "date"]:  # Check for multiple labels
+            if date.get("label", "").lower() in ["date made", "date"]:
                 year = process_date(date.get("content", ""))
                 if year:
                     break
 
-        
-        # Extract country
-        # Extract and clean countries
         # Extract places
-        places = [
-            place.get("content", "") 
-            for place in entry.get("place", []) 
-            if any(keyword in place.get("label", "").lower() for keyword in ["place", "place made", "made in"])
+        places = [place.get("content", "") for place in entry.get("place", [])]
 
-        ]
-        countries = extract_countries(places[-1]) if places else ["Unknown"]
-
-
-
-
-
-
-
-
+        # Process all places and handle multiple countries
+        countries = []
+        for place in places:
+            countries.extend(extract_countries(place))
+        countries = list(set(countries))  # Deduplicate the list
         
+        small_image = f"{image}&max=300" if image else None
+
         # Append cleaned entry
         cleaned_data.append({
             "ID": ID,
+            "title": title,
             "type": type_,
             "subtype": subtype,
             "material": material,
-            "submaterial": submaterial,
+            "submaterial": submaterials,
+            "length": length,  # Add length
+            "width": width,    # Add width
             "year": year,
-            "country": countries if isinstance(countries, list) else [countries]
+            "country": countries,
+            "link": link,
+            "dept": dept,
+            "image": image,
+            "small_image": small_image
         })
     
     # Write the cleaned data to a new JSON file
     with open(output_path, 'w') as outfile:
         json.dump(cleaned_data, outfile, indent=4)
 
-
 # Paths to the JSON files
-input_json_path = 'cutleryOrig.json'  # Update this with the path to your input file
-output_json_path = 'cleaned_data1.json'  # Update this with the desired output file path (1 had country better)
+input_json_path = 'data_img.json'
+output_json_path = 'cleaned_new_data.json'
 
 # Process the data
 process_json(input_json_path, output_json_path)
 
 print(f"Data has been cleaned and saved to {output_json_path}.")
+
