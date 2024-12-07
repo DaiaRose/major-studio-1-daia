@@ -11,45 +11,98 @@ async function populateGallery() {
     const response = await fetch('cleaned_imgdata.json');
     const imageData = await response.json();
 
-    const imageLoadPromises = imageData.map(async (data) => {
+    // Sort the data by year (ascending)
+    const sortedData = imageData.sort((a, b) => {
+      const yearA = a.year || Number.MAX_SAFE_INTEGER;
+      const yearB = b.year || Number.MAX_SAFE_INTEGER;
+      return yearA - yearB;
+    });
+
+    // Distribute images across rows
+    const rows = [row1, row2, row3];
+    let rowIndex = 0;
+
+    sortedData.forEach((data, index) => {
       const id = data.ID;
       if (!id) return;
-
-      // Use the new image link from the JSON file
-      const imageUrl = `${data.small_image}`;
-
-      const isValidImage = await checkImageExists(imageUrl);
-      if (!isValidImage) return;
 
       const img = document.createElement('img');
       img.classList.add('image');
       img.dataset.id = id;
-      img.src = imageUrl;
+      img.dataset.year = data.year || "Unknown"; // Add year as a data attribute
+      img.src = `${data.small_image}`;
       img.alt = data.type || "Untitled";
 
-      // Add lazy loading
       img.loading = "lazy";
-
-      // Add click event listener for the card
       img.addEventListener('click', () => showCard(data));
 
-      const rows = document.querySelectorAll('.image-row');
-      const shortestRow = Array.from(rows).sort((a, b) => a.children.length - b.children.length)[0];
-      shortestRow.appendChild(img);
-
-      return new Promise((resolve) => {
-        img.onload = resolve;
-      });
+      rows[rowIndex].appendChild(img);
+      rowIndex = (rowIndex + 1) % rows.length; // Cycle through rows
     });
 
-    await Promise.all(imageLoadPromises);
-    console.log("All images loaded, calling adjustGalleryWidth.");
-    setTimeout(() => {
-      adjustGalleryWidth();
-    }, 1000);
+    console.log("Images loaded, initializing slider.");
+    initializeSlider(sortedData);
   } catch (error) {
     console.error("Error populating gallery:", error);
   }
+}
+
+const parentContainer = document.getElementById('view2'); // The scrollable parent
+const slider = document.getElementById('year-slider');
+const yearLabel = document.getElementById('year-label');
+
+// State to track active interaction
+let isSliderActive = false;
+
+// Initialize slider based on the gallery content
+async function initializeSlider(imageData) {
+  // Set the slider range based on the number of images
+  slider.min = 0;
+  slider.max = imageData.length - 1;
+
+  // Sync gallery and slider when the slider is moved
+  slider.addEventListener('input', () => {
+    isSliderActive = true; // Mark slider as active
+    const index = parseInt(slider.value, 10);
+
+    const targetImage = document.querySelector(`.image[data-id="${imageData[index].ID}"]`);
+    if (targetImage) {
+      // Scroll the gallery directly to the target image
+      const galleryOffset = parentContainer.scrollLeft;
+      const targetOffset = targetImage.offsetLeft - galleryOffset;
+      parentContainer.scrollLeft += targetOffset;
+
+      // Update the displayed year
+      yearLabel.textContent = imageData[index].year || "Unknown";
+    }
+  });
+
+  // Re-enable scroll updates after slider interaction
+  slider.addEventListener('change', () => {
+    isSliderActive = false; // Slider interaction is complete
+  });
+
+  // Sync slider and year when the gallery is scrolled
+  parentContainer.addEventListener('scroll', () => {
+    if (isSliderActive) return; // Block scroll updates during slider interaction
+
+    const images = document.querySelectorAll('.image');
+    for (let i = 0; i < images.length; i++) {
+      const image = images[i];
+      const imageLeft = image.getBoundingClientRect().left;
+      const parentLeft = parentContainer.getBoundingClientRect().left;
+
+      if (imageLeft >= parentLeft) {
+        // Update slider and year
+        slider.value = i;
+        yearLabel.textContent = imageData[i].year || "Unknown";
+        break;
+      }
+    }
+  });
+
+  // Set initial year
+  yearLabel.textContent = imageData[0].year || "Unknown";
 }
 
 

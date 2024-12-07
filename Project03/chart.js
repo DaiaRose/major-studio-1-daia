@@ -24,9 +24,10 @@ async function dataLoad() {
   }
 
   initializeLayout();
-  const data = await d3.json("cleaned_data.json");
+  const data = await d3.json("cleaned_imgdata.json");
 
-  const validData = data.filter(d => d.year !== null && d.country && d.type !== null);
+  const validData = data.filter(d => d.year !== null && d.type !== null);
+  console.log(`Loaded ${validData.length} valid items.`);
 
   setState({
     data: validData.map((d, i) => ({
@@ -326,7 +327,7 @@ function draw() {
         .html(`
           <strong>${state.groupBy.selected}:</strong> ${d[state.groupBy.selected]}<br>
           <strong>Year:</strong> ${d.year}<br>
-          <strong>Country:</strong> ${d.country}
+          <strong>Location:</strong> ${d.country}
         `);
     })
     .on("mousemove", event => {
