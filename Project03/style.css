@@ -41,12 +41,30 @@ body {
 
 /* #region Chart Styling */
 #view1.active {
-  display: flex; /* Keep view1 as flex for its layout */
+  display: flex; /* Flex layout for positioning */
+  position: relative;
+  width: 100%;
+  height: 100vh; /* Full viewport height */
+  padding-top: 100px; /* Push everything down */
+  box-sizing: border-box;
+}
+
+svg {
+  display: block;
+  margin: 0 auto; /* Center the SVG horizontally */
+  max-width: 100%; /* Ensure it fits within the container */
+  height: auto;
 }
 
 .right-menu {
-  position: relative; /* Adjust as needed (e.g., absolute, fixed) */
-  z-index: 10; /* Higher than .nav-buttons */
+  position: absolute;
+  top: 20px; /* Float in the top-right corner */
+  right: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 10;
 }
 
 /* #endregion */
