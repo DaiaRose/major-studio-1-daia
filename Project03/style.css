@@ -7,14 +7,14 @@ body {
 
 #nav-buttons {
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 10px;
+  left: 10px;
   width: 100%;
   color: white;
   display: flex;
   justify-content: flex-start; /* Align button to the left */
   padding: 10px;
-  z-index: 1;
+  z-index: 10;
 }
 
 #nav-buttons button {
@@ -22,6 +22,7 @@ body {
   background-color: #555;
   border: none;
   padding: 10px 20px;
+  border-radius: 5px;
   cursor: pointer;
 }
 
@@ -57,6 +58,12 @@ body {
   height: 100%;
   overflow-y: hidden; /* Prevent vertical scrolling */
   overflow-x: auto; /* Allow horizontal scrolling for gallery */
+  scrollbar-width: none; /* Hide scrollbar in Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar in IE */
+}
+
+#view2::-webkit-scrollbar{
+  display: none; /* Hide scrollbar in WebKit browsers */
 }
 
 /* Title Section Styling */
@@ -64,11 +71,12 @@ body {
   text-align: center;
   position: fixed;
   top: 0; /* Sticks to the top of the viewport */
-  z-index: 10;
+  z-index:5;
   background-color: #f9f9f9;
-  padding: 20px;
+  padding: 20px 10px;
   border-bottom: 1px solid #ddd;
   width: 100%; /* Ensure the title spans the viewport width */
+  margin-bottom: 20px;
   box-sizing: border-box; /* Include padding in width calculation */
 }
 
@@ -86,6 +94,7 @@ body {
   width: max-content; /* Allow gallery to scroll horizontally */
   height: auto;
   overflow: visible; /* Ensure scrolling happens on the parent */
+  padding: 90px 10px;
 }
 
 /* Style for each row */
@@ -112,23 +121,55 @@ body {
 
 #slider-container {
   position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 0; /* Sticks to the bottom of the viewport */
   z-index: 10;
   background-color: white;
   padding: 10px;
-  border-top: 1px solid #ccc;
-  width: 100%; /* Ensure the slider spans the viewport width */
-  box-sizing: border-box; /* Include padding in width calculation */
+  width: 60%; 
+  box-sizing: border-box;
 }
 
 #year-slider {
+  -webkit-appearance: none; /* Remove default styling in WebKit browsers */
+  appearance: none; /* Remove default styling in modern browsers */
   width: 80%;
-  margin-left: 10px;
+  height: 6px;
+  background: linear-gradient(to right, #888, #ddd); /* Custom track gradient */
+  border-radius: 3px; /* Rounded track edges */
+  outline: none; /* Remove focus outline */
+  margin: 0 10px;
+  cursor: pointer; /* Change cursor to pointer */
 }
 
-#year-label {
-  font-weight: bold;
-  margin-left: 10px;
+/* Hover effect on the slider track */
+#year-slider:hover {
+  background: linear-gradient(to right, #555, #ccc); /* Darker gradient on hover */
+}
+
+/* Style for the thumb (draggable button) */
+#year-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Remove default styling in WebKit browsers */
+  appearance: none; /* Ensure cross-browser consistency */
+  width: 16px; /* Thumb width */
+  height: 16px; /* Thumb height */
+  background: #555; /* Thumb color */
+  border-radius: 50%; /* Make thumb circular */
+  cursor: pointer; /* Change cursor to pointer */
+  border: 2px solid white; /* Optional white border */
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3); /* Optional shadow for depth */
+}
+
+/* Hover effect on the thumb */
+#year-slider::-webkit-slider-thumb:hover {
+  background: #333; /* Darker thumb on hover */
+}
+
+/* Focused slider track */
+#year-slider:focus {
+  outline: none; /* Remove focus outline */
+  background: linear-gradient(to right, #777, #ccc); /* Slightly darker track on focus */
 }
 
 /* Card/modal styling */
@@ -138,7 +179,6 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex; /* Use flexbox for image and text alignment */
-  flex-direction: row; /* Align image and text side-by-side */
   background: white;
   border: 1px solid #ccc;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -147,8 +187,8 @@ body {
   z-index: 1001;
   width: 80%; 
   height: 80%; 
-  max-width: 600px; 
-  max-height: 500px; 
+  max-width: 800px; 
+  max-height: 700px; 
   border-radius: 10px; 
   overflow: hidden; /* Ensure contents stay inside the card */
   box-sizing: border-box; /* Include padding in total dimensions */
@@ -158,19 +198,48 @@ body {
   display: flex;
 }
 
-.card img.card-image {
-  width: 50%;
-  height: 90%;
-  object-fit: cover; /* Ensure the image fills its container without distortion */
-  border-radius: 5px 0 0 5px; /* Rounded corners for the left side only */
+/* Normal Layout: Image centered within its half */
+.normal-layout {
+  display: flex;
+  flex-direction: row; /* Image and text side-by-side */
+  gap: 20px; /* Space between image and text */
+  align-items: center; /* Center items vertically */
 }
 
-.card-content {
+.normal-layout img.card-image {
+  width: 50%; /* Image takes 50% of the card width */
+  height: auto; /* Maintain aspect ratio */
+  max-height: 90%;
+  object-fit: contain; /* Prevent distortion */
+  margin: 0 auto; /* Center within its allocated half */
+  display: block; /* Ensure predictable layout behavior */
+  padding: 10px;
+}
+
+/* Wide Layout: Image fully centered */
+.wide-layout {
   display: flex;
-  flex-direction: row; /* Arrange image and text side-by-side */
-  gap: 20px; /* Space between image and text */
-  align-items: flex-start; /* Align content at the top */
-  width: 100%; /* Ensure content spans full card width */
+  flex-direction: column; /* Stack text and image vertically */
+  align-items: center; /* Center text and image horizontally */
+  justify-content: center; /* Center content vertically */
+  width: 100%; /* Make sure it spans the full width of the card */
+  height: 100%; /* Ensure it occupies the full height of the card */
+  gap: 20px; /* Space between text and image */
+}
+
+.wide-layout .card-text {
+  text-align: center; /* Center-align text */
+  width: 100%;
+}
+
+.wide-layout img.card-image {
+  width: auto; /* Image width adjusts to its natural size */
+  max-width: 90%; /* Prevent image from exceeding 90% of the card width */
+  height: auto; /* Maintain aspect ratio */
+  max-height: 70%; /* Prevent image from exceeding 70% of the card height */
+  object-fit: contain; /* Ensure the image fits without distortion */
+  margin: 0 auto; /* Center the image horizontally */
+  display: block; /* Ensure predictable layout behavior */
 }
 
 .card h2 {
@@ -207,7 +276,6 @@ body {
   text-align: center; /* Center text horizontally */
   cursor: pointer;
 }
-
 
 .close-card-btn:hover {
   background-color: #777;

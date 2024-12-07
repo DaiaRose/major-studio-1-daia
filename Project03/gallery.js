@@ -117,24 +117,31 @@ async function checkImageExists(url) {
   }
 }
 
-
-
 function showCard(data) {
-  card.innerHTML = `
-    <div class="card-content">
-      <img src="images/${data.ID}.jpg" alt="${data.title || 'Untitled'}" class="card-image">
-      <div class="card-text">
-        <h2>${data.title || "Untitled"}</h2>
-        <p><strong>Material:</strong> ${data.submaterial || "Unknown"}</p>
-        <p><strong>Year:</strong> ${data.year || "Unknown"}</p>
-        <p><strong>Country:</strong> ${data.country || "Unknown"}</p>
-      </div>
-    </div>
-    <button onclick="closeCard()" class="close-card-btn">×</button>
-  `;
-  card.classList.add('active');
-}
+  // Create a new image element to measure dimensions
+  const tempImg = new Image();
+  tempImg.src = data.image;
 
+  tempImg.onload = () => {
+    const isWide = tempImg.width >= 1.5 * tempImg.height;
+
+    // Apply appropriate layout based on the image's aspect ratio
+    card.innerHTML = `
+      <div class="card-content ${isWide ? 'wide-layout' : 'normal-layout'}">
+        <img src="${data.image}" alt="${data.title || 'Untitled'}" class="card-image">
+        <div class="card-text">
+          <h2>${data.title || "Untitled"}</h2>
+          <p><strong>Material:</strong> ${data.submaterial || "Unknown"}</p>
+          <p><strong>Year:</strong> ${data.year || "Unknown"}</p>
+          <p><strong>Country:</strong> ${data.country || "Unknown"}</p>
+        </div>
+      </div>
+      <button onclick="closeCard()" class="close-card-btn">×</button>
+    `;
+
+    card.classList.add('active');
+  };
+}
 
 
 
