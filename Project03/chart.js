@@ -11,6 +11,7 @@ let state = {
     coordinates: [0, 0],
   },
   dimensions: [window.innerWidth, window.innerHeight],
+  viewMode: "focused", // Default mode; can be "focused" or "overview"
 };
 
 // Initialize scales globally
@@ -184,9 +185,9 @@ function initializeLayout() {
 
   // Add a group for the chart area and apply margins
   const chart = svg
-  .append("g")
-  .attr("class", "chart-area")
-  .attr("transform", `translate(${margin.left}, ${margin.top + 100})`);
+    .append("g")
+    .attr("class", "chart-area")
+    .attr("transform", `translate(${margin.left}, ${margin.top + 100})`);
 
   // Define scales using chart area dimensions
   xScale = d3.scaleLinear().range([0, state.chartWidth]);
@@ -201,8 +202,36 @@ function initializeLayout() {
   // Add a group for dots
   chart.append("g").attr("class", "dots");
 
-  // Add menu to toggle grouping
+  // Initialize the right menu
+  initializeRightMenu();
+}
+
+// Right menu initialization
+function initializeRightMenu() {
+  const parent = d3.select("#view1");
+
+  // Clear any existing menu elements
+  parent.select(".right-menu").remove();
+
+  // Add a new right menu
   const rightMenu = parent.append("div").attr("class", "right-menu");
+
+  // Create toggle button for switching between modes
+  rightMenu
+    .append("button")
+    .attr("id", "toggleViewButton")
+    .text(state.viewMode === "focused" ? "Switch to Overview" : "Switch to Focused")
+    .on("click", () => {
+      // Toggle view mode
+      const nextMode = state.viewMode === "focused" ? "overview" : "focused";
+      setState({ viewMode: nextMode });
+
+      // Update button text
+      d3.select("#toggleViewButton")
+        .text(nextMode === "focused" ? "Switch to Overview" : "Switch to Focused");
+
+      draw(); // Redraw the chart based on the current mode
+    });
 
   // Create type dropdown
   rightMenu
@@ -210,7 +239,7 @@ function initializeLayout() {
     .text("Type: ")
     .append("select")
     .attr("id", "typeDropdown")
-    .on("change", onFilterChange); // Event listener for dropdown change
+    .on("change", onFilterChange);
 
   // Create material dropdown
   rightMenu
@@ -218,9 +247,8 @@ function initializeLayout() {
     .text("Material: ")
     .append("select")
     .attr("id", "materialDropdown")
-    .on("change", onFilterChange); // Event listener for dropdown change
+    .on("change", onFilterChange);
 }
-
 
 // Updated draw 
 function draw() {
@@ -228,14 +256,18 @@ function draw() {
 
   const dataToDraw = state.filteredData || state.data; // Use filtered data if available
 
-  // Filter data to include only the range from 1500 to 2000
-  const filteredData = dataToDraw.filter(d => d.year >= 1500 && d.year <= 1950);
+  // Adjust parameters based on view mode
+  const isFocused = state.viewMode === "focused";
+  const minYear = isFocused ? 1500 : 500;
+  const maxYear = isFocused ? 1950 : 2000;
+  const dotSpacing = isFocused ? 10 : 7; // Space between stacked dots
+  const axisPadding = isFocused ? 10 : 5; // Padding above the x-axis
+  const dotRadius = isFocused ? 5 : 3; // Dot radius
 
-  // Compute the min and max years
-  const minYear = 1500;
-  const maxYear = 1950;
+  // Filter data to include only the range specified by the current mode
+  const filteredData = dataToDraw.filter(d => d.year >= minYear && d.year <= maxYear);
 
-  // Update xScale to cover the full range from 1500 to 2000
+  // Update xScale to cover the full range for the current mode
   xScale.domain([minYear, maxYear]);
 
   // Group data by year
@@ -270,42 +302,40 @@ function draw() {
     .style("border-radius", "3px")
     .style("pointer-events", "none")
     .style("opacity", 0);
-    const dotSpacing = 10; // Space between stacked dots
-    const axisPadding = 10; // Padding above the x-axis
-    
-    d3.select(".dots")
-      .selectAll("circle")
-      .data(filteredData, d => d.id)
-      .join("circle")
-      .attr("cx", d => xScale(d.year)) // Use xScale for horizontal positioning
-      .attr("cy", (d) => {
-        const yearGroup = groupedData.get(d.year); // Get all data points for this year
-        const stackIndex = yearGroup.indexOf(d);  // Find the position of this dot in the stack
-        return state.chartHeight - stackIndex * dotSpacing - axisPadding; // Apply padding
-      })
-      .attr("r", 5)
-      .attr("fill", d => colorScale(d[state.groupBy.selected] || "Unknown"))
-      .on("mouseenter", (event, d) => {
-        tooltip
-          .style("opacity", 1)
-          .html(`
-            <strong>${state.groupBy.selected}:</strong> ${d[state.groupBy.selected]}<br>
-            <strong>Year:</strong> ${d.year}<br>
-            <strong>Location:</strong> ${d.country}
-          `);
-      })
-      .on("mousemove", event => {
-        tooltip
-          .style("left", `${event.pageX + 10}px`)
-          .style("top", `${event.pageY + 10}px`);
-      })
-      .on("mouseleave", () => {
-        tooltip.style("opacity", 0);
-      });
-    
-    // Remove any existing y-axis elements
-    d3.select(".y-axis").selectAll("*").remove();
-    
+
+  // Draw dots
+  d3.select(".dots")
+    .selectAll("circle")
+    .data(filteredData, d => d.id)
+    .join("circle")
+    .attr("cx", d => xScale(d.year)) // Use xScale for horizontal positioning
+    .attr("cy", (d) => {
+      const yearGroup = groupedData.get(d.year); // Get all data points for this year
+      const stackIndex = yearGroup.indexOf(d);  // Find the position of this dot in the stack
+      return state.chartHeight - stackIndex * dotSpacing - axisPadding; // Apply spacing
+    })
+    .attr("r", dotRadius)
+    .attr("fill", d => colorScale(d[state.groupBy.selected] || "Unknown"))
+    .on("mouseenter", (event, d) => {
+      tooltip
+        .style("opacity", 1)
+        .html(`
+          <strong>${state.groupBy.selected}:</strong> ${d[state.groupBy.selected]}<br>
+          <strong>Year:</strong> ${d.year}<br>
+          <strong>Location:</strong> ${d.country}
+        `);
+    })
+    .on("mousemove", event => {
+      tooltip
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY + 10}px`);
+    })
+    .on("mouseleave", () => {
+      tooltip.style("opacity", 0);
+    });
+
+  // Remove any existing y-axis elements
+  d3.select(".y-axis").selectAll("*").remove();
 
   // Update legend
   const legendData = Array.from(new Set(filteredData.map(d => d[state.groupBy.selected])));
