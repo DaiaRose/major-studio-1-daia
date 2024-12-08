@@ -67,6 +67,16 @@ svg {
   z-index: 10;
 }
 
+#circle-selector {
+  position: absolute;
+  top: 40px;
+  left: 15%; 
+  transform: translateX(-50%); /* Center alignment correction */
+  z-index: 10; /* Ensure it's above the chart */
+  background-color: rgba(255, 255, 255, 0.8); /* Optional: Add a semi-transparent background */
+  border-radius: 8px; /* Optional: Add rounded corners */
+}
+
 .interactive-selector {
   margin: 20px auto;
   text-align: center;
@@ -81,15 +91,6 @@ circle {
   transition: opacity 0.3s, transform 0.3s;
 }
 
-select#typeDropdown option {
-  color: inherit; /* Ensure the color is inherited from the dynamically set styles */
-}
-
-/* Style for hovered dropdown options */
-select#typeDropdown option:hover {
-  background-color: currentColor; /* Use the current text color as background on hover */
-  color: white; /* Change text color to contrast with the background */
-}
 /* #endregion */
 
 /* view2 setup */

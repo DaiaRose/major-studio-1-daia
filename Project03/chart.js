@@ -1,4 +1,4 @@
-
+// #region all the INITIALIZING
 
 // Initial state
 let state = {
@@ -19,7 +19,6 @@ let state = {
 // Initialize scales globally
 let xScale, yScale, colorScale;
 
-// Load and process data
 // Load and process data
 async function dataLoad() {
   if (!document.querySelector("#view1").classList.contains("active")) {
@@ -47,7 +46,6 @@ async function dataLoad() {
     data: processedData,
   });
 }
-
 
 // Update state and redraw the visualization
 function setState(nextState) {
@@ -90,7 +88,6 @@ function onMouseEvent(event) {
   }
 }
 
-
 function showView(viewId) {
   // Hide all views
   document.querySelectorAll('.view').forEach(view => {
@@ -116,48 +113,9 @@ function showView(viewId) {
     // Add any specific logic for View 2 if needed
   }
 }
+// #endregion
 
-
-// function populateDropdowns() {
-//   const typeDropdown = d3.select("#typeDropdown");
-//   const materialDropdown = d3.select("#materialDropdown");
-
-//   // Get unique values for type and material
-//   const types = Array.from(new Set(state.data.map(d => d.type)));
-//   const materials = Array.from(new Set(state.data.map(d => d.material)));
-
-//   // Populate type dropdown
-//   typeDropdown
-//     .selectAll("option")
-//     .data(["All", ...types]) // Include "All" for no filtering
-//     .join("option")
-//     .attr("value", d => d)
-//     .text(d => d);
-
-//   // Populate material dropdown
-//   materialDropdown
-//     .selectAll("option")
-//     .data(["All", ...materials]) // Include "All" for no filtering
-//     .join("option")
-//     .attr("value", d => d)
-//     .text(d => d);
-// }
-
-function onFilterChange() {
-  const selectedType = d3.select("#typeDropdown").property("value");
-  const selectedMaterial = d3.select("#materialDropdown").property("value");
-
-  // Filter data based on selections
-  const filteredData = state.data.filter(d => {
-    const matchesType = selectedType === "All" || d.type === selectedType;
-    const matchesMaterial = selectedMaterial === "All" || d.material === selectedMaterial;
-    return matchesType && matchesMaterial;
-  });
-
-  // Update state with filtered data
-  setState({ filteredData });
-}
-
+// #region Circle SELECTOR
 // Create the selector grid
 function createCircleSelector(data) {
   // Group data by material and type
@@ -180,7 +138,7 @@ function createCircleSelector(data) {
   // Define dimensions
   const width = 250;
   const height = 250;
-  const margin = { top: 10, right: 10, bottom: 150, left: 60 };
+  const margin = { top: 10, right: 10, bottom: 0, left: 60 };
   const spacing = 10;
 
   // Create SVG
@@ -289,6 +247,9 @@ function filterDataBySelection(material, type) {
 }
 }
 
+// #endregion
+
+// #region LAYOUT
 
 // Initialize layout
 function initializeLayout() {
@@ -367,28 +328,14 @@ function initializeRightMenu() {
 
       // Update button text
       d3.select("#toggleViewButton")
-        .text(nextMode === "focused" ? "Overview" : "Switch to Focused");
+        .text(nextMode === "focused" ? "Overview" : "zoom");
 
       draw(); // Redraw the chart based on the current mode
     });
-
-  // Create type dropdown
-  rightMenu
-    .append("label")
-    .text("Type: ")
-    .append("select")
-    .attr("id", "typeDropdown")
-    .on("change", onFilterChange);
-
-  // Create material dropdown
-  rightMenu
-    .append("label")
-    .text("Material: ")
-    .append("select")
-    .attr("id", "materialDropdown")
-    .on("change", onFilterChange);
 }
+// #endregion
 
+// #region DRAW main chart
 // Updated draw 
 function draw() {
   console.log("draw function is running");
@@ -492,7 +439,7 @@ function draw() {
       `
     );
 }
-
+// #endregion
 
 // Load data and start visualization
 dataLoad();
