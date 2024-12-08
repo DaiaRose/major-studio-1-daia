@@ -1,3 +1,5 @@
+
+
 // Initial state
 let state = {
   data: [],
@@ -220,7 +222,7 @@ function initializeRightMenu() {
   rightMenu
     .append("button")
     .attr("id", "toggleViewButton")
-    .text(state.viewMode === "focused" ? "Switch to Overview" : "Switch to Focused")
+    .text(state.viewMode === "focused" ? "Overview" : "Focused")
     .on("click", () => {
       // Toggle view mode
       const nextMode = state.viewMode === "focused" ? "overview" : "focused";
@@ -228,7 +230,7 @@ function initializeRightMenu() {
 
       // Update button text
       d3.select("#toggleViewButton")
-        .text(nextMode === "focused" ? "Switch to Overview" : "Switch to Focused");
+        .text(nextMode === "focused" ? "Overview" : "Switch to Focused");
 
       draw(); // Redraw the chart based on the current mode
     });
@@ -260,9 +262,9 @@ function draw() {
   const isFocused = state.viewMode === "focused";
   const minYear = isFocused ? 1500 : 500;
   const maxYear = isFocused ? 1950 : 2000;
-  const dotSpacing = isFocused ? 10 : 7; // Space between stacked dots
+  const dotSpacing = isFocused ? 13 : 7; // Space between stacked dots
   const axisPadding = isFocused ? 10 : 5; // Padding above the x-axis
-  const dotRadius = isFocused ? 5 : 3; // Dot radius
+  const dotRadius = isFocused ? 6 : 3; // Dot radius
 
   // Filter data to include only the range specified by the current mode
   const filteredData = dataToDraw.filter(d => d.year >= minYear && d.year <= maxYear);
@@ -316,13 +318,14 @@ function draw() {
     })
     .attr("r", dotRadius)
     .attr("fill", d => colorScale(d[state.groupBy.selected] || "Unknown"))
+    .style("fill-opacity", 0.4) // Semi-transparent fill
+    .attr("stroke", d => colorScale(d[state.groupBy.selected] || "Unknown")) // Stroke matches the color
+    .attr("stroke-width", 1.5) // Define stroke width
     .on("mouseenter", (event, d) => {
       tooltip
         .style("opacity", 1)
         .html(`
-          <strong>${state.groupBy.selected}:</strong> ${d[state.groupBy.selected]}<br>
-          <strong>Year:</strong> ${d.year}<br>
-          <strong>Location:</strong> ${d.country}
+          ${d.year || "Unknown Year"} <strong>○</strong> ${d.country || "Unknown Country"}
         `);
     })
     .on("mousemove", event => {

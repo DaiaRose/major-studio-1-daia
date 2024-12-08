@@ -67,9 +67,18 @@ svg {
   z-index: 10;
 }
 
+select#typeDropdown option {
+  color: inherit; /* Ensure the color is inherited from the dynamically set styles */
+}
+
+/* Style for hovered dropdown options */
+select#typeDropdown option:hover {
+  background-color: currentColor; /* Use the current text color as background on hover */
+  color: white; /* Change text color to contrast with the background */
+}
 /* #endregion */
 
-/* Main view setup */
+/* view2 setup */
 #view2.active {
   display: block;
   position: relative;
