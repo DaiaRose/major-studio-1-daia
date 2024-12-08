@@ -20,6 +20,7 @@ let state = {
 let xScale, yScale, colorScale;
 
 // Load and process data
+// Load and process data
 async function dataLoad() {
   if (!document.querySelector("#view1").classList.contains("active")) {
     console.log("View 1 is not active. Skipping chart initialization.");
@@ -27,19 +28,24 @@ async function dataLoad() {
   }
 
   initializeLayout();
-  const data = await d3.json("cleaned_imgdata.json");
 
+  const data = await d3.json("cleaned_imgdata.json");
   const validData = data.filter(d => d.year !== null && d.type !== null);
+
   console.log(`Loaded ${validData.length} valid items.`);
 
-  setState({
-    data: validData.map((d, i) => ({
-      ...d,
-      id: d.ID || `item_${i}`, // Ensure unique IDs
-    })),
-  });
+  const processedData = validData.map((d, i) => ({
+    ...d,
+    id: d.ID || `item_${i}`, // Ensure unique IDs
+  }));
 
-  populateDropdowns(); // Populate the dropdown menus after loading data
+  // Add this call for the interactive selector
+  createCircleSelector(processedData);
+
+  // Update state and redraw
+  setState({
+    data: processedData,
+  });
 }
 
 
@@ -112,30 +118,30 @@ function showView(viewId) {
 }
 
 
-function populateDropdowns() {
-  const typeDropdown = d3.select("#typeDropdown");
-  const materialDropdown = d3.select("#materialDropdown");
+// function populateDropdowns() {
+//   const typeDropdown = d3.select("#typeDropdown");
+//   const materialDropdown = d3.select("#materialDropdown");
 
-  // Get unique values for type and material
-  const types = Array.from(new Set(state.data.map(d => d.type)));
-  const materials = Array.from(new Set(state.data.map(d => d.material)));
+//   // Get unique values for type and material
+//   const types = Array.from(new Set(state.data.map(d => d.type)));
+//   const materials = Array.from(new Set(state.data.map(d => d.material)));
 
-  // Populate type dropdown
-  typeDropdown
-    .selectAll("option")
-    .data(["All", ...types]) // Include "All" for no filtering
-    .join("option")
-    .attr("value", d => d)
-    .text(d => d);
+//   // Populate type dropdown
+//   typeDropdown
+//     .selectAll("option")
+//     .data(["All", ...types]) // Include "All" for no filtering
+//     .join("option")
+//     .attr("value", d => d)
+//     .text(d => d);
 
-  // Populate material dropdown
-  materialDropdown
-    .selectAll("option")
-    .data(["All", ...materials]) // Include "All" for no filtering
-    .join("option")
-    .attr("value", d => d)
-    .text(d => d);
-}
+//   // Populate material dropdown
+//   materialDropdown
+//     .selectAll("option")
+//     .data(["All", ...materials]) // Include "All" for no filtering
+//     .join("option")
+//     .attr("value", d => d)
+//     .text(d => d);
+// }
 
 function onFilterChange() {
   const selectedType = d3.select("#typeDropdown").property("value");
@@ -150,6 +156,137 @@ function onFilterChange() {
 
   // Update state with filtered data
   setState({ filteredData });
+}
+
+// Create the selector grid
+function createCircleSelector(data) {
+  // Group data by material and type
+  const groupedData = {};
+  data.forEach(item => {
+      if (!groupedData[item.material]) groupedData[item.material] = {};
+      if (!groupedData[item.material][item.type]) groupedData[item.material][item.type] = 0;
+      groupedData[item.material][item.type]++;
+  });
+
+  // Flatten grouped data for visualization
+  const selectorData = Object.entries(groupedData).flatMap(([material, types]) =>
+      Object.entries(types).map(([type, count]) => ({
+          material,
+          type,
+          count,
+      }))
+  );
+
+  // Define dimensions
+  const width = 250;
+  const height = 250;
+  const margin = { top: 10, right: 10, bottom: 150, left: 60 };
+  const spacing = 10;
+
+  // Create SVG
+  const svg = d3.select("#circle-selector")
+      .html("") // Clear existing content
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+  // Scales
+  const materials = [...new Set(selectorData.map(d => d.material))];
+  const types = [...new Set(selectorData.map(d => d.type))];
+
+  const x = d3.scaleBand()
+      .domain(materials)
+      .range([0, width * 0.4])
+      .padding(0);
+
+  const y = d3.scaleBand()
+      .domain(["knife", "fork",  "spoon", "folding","stick", "utensil", "dessert"])
+      .range([0, height* 0.7])
+      .padding(0);
+
+  const maxCount = d3.max(selectorData, d => d.count);
+  const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+  // Add circles
+  svg.selectAll("circle")
+  .data(selectorData)
+  .enter()
+  .append("circle")
+  .attr("cx", d => x(d.material) + x.bandwidth() / 2) // Center within material column
+  .attr("cy", d => y(d.type) + y.bandwidth() / 2) // Center within type row
+  .attr("r", 10)
+  .attr("fill", d => color(d.type))
+  .attr("opacity", d => {
+      const minOpacity = 0.2; // Minimum opacity
+      return minOpacity + (d.count / maxCount) * (1 - minOpacity);
+  })
+  .style("cursor", "pointer")
+  .on("mouseover", function (event, d) {
+      // Bold the corresponding material label
+      svg.selectAll(".material-label")
+        .filter(label => label === d.material)
+        .style("font-weight", "bold");
+
+      // Bold the corresponding type label
+      svg.selectAll(".tick text")
+        .filter(label => label === d.type)
+        .style("font-weight", "bold");
+  })
+  .on("mouseout", function () {
+      // Remove bold styling from all labels
+      svg.selectAll(".material-label, .tick text")
+        .style("font-weight", "normal");
+  })
+  .on("click", (event, d) => {
+      console.log(`Filtering by Material: ${d.material}, Type: ${d.type}`);
+      filterDataBySelection(d.material, d.type);
+  });
+
+  // X-axis labels (material)
+  svg.selectAll(".material-label")
+  .data(materials)
+  .join("text")
+  .attr("class", "material-label")
+  .attr("x", material => x(material) + x.bandwidth() - 5)
+  .attr("y", material => {
+      // Find the lowest circle's y-coordinate for this material
+      const circlesForMaterial = selectorData.filter(d => d.material === material);
+      if (circlesForMaterial.length > 0) {
+          const lowestCircle = d3.max(circlesForMaterial.map(d => y(d.type) + y.bandwidth() / 2));
+          return lowestCircle + 23; // Add padding below the lowest circle
+      }
+      return height + 20; // Default to bottom if no circles
+  })
+  .text(material => material)
+  .attr("text-anchor", "middle") // Center the text horizontally
+  .style("font-size", "12px")
+  .style("fill", "#333"); // Adjust style as needed
+
+  // Y-axis labels (type)
+  const yAxis = svg.append("g")
+  .attr("transform", `translate(0, 0)`)
+  .call(d3.axisLeft(y));
+
+  yAxis.selectAll("path") // Select the axis line
+    .remove(); // Remove the line
+
+  yAxis.selectAll(".tick line") // Select the tick lines
+    .remove(); // Remove tick lines
+
+  yAxis.selectAll(".tick text") // Keep the labels
+    .attr("class", "tick-text") // Add a class for easier selection
+    .style("font-size", "12px") // Optionally style the labels
+    .style("fill", "#333"); // Adjust color as needed
+
+
+function filterDataBySelection(material, type) {
+  const filteredData = state.data.filter(
+      d => d.material === material && d.type === type
+  );
+  setState({ filteredData });
+}
 }
 
 

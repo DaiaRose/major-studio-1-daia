@@ -67,6 +67,20 @@ svg {
   z-index: 10;
 }
 
+.interactive-selector {
+  margin: 20px auto;
+  text-align: center;
+}
+
+.interactive-selector svg {
+  display: block;
+  margin: auto;
+}
+
+circle {
+  transition: opacity 0.3s, transform 0.3s;
+}
+
 select#typeDropdown option {
   color: inherit; /* Ensure the color is inherited from the dynamically set styles */
 }
