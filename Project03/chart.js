@@ -17,7 +17,17 @@ let state = {
 };
 
 // Initialize scales globally
-let xScale, yScale, colorScale;
+let xScale, yScale;
+
+const typeColors = {
+  knife: "#5D3FD3", // purpleblue
+  fork: "#EB3A84", // brown
+  spoon: "#F59300", // Yellow
+  folding: "#C18A1B", //pink
+  stick: "#6B8C37", //olive
+  utensil: "#0072B5", // blue
+  dessert: "#930981", // Purple
+};
 
 // Load and process data
 async function dataLoad() {
@@ -169,65 +179,66 @@ function createCircleSelector(data) {
     .padding(0);
 
   const maxCount = d3.max(selectorData, d => d.count);
-  const color = d3.scaleOrdinal(d3.schemeCategory10);
+  const color = type => typeColors[type] || "#666"; // Fallback to gray for unknown types
 
-  // Add circles
   // Add circles
   svg.selectAll("circle")
-    .data(selectorData)
-    .enter()
-    .append("circle")
-    .attr("cx", d => x(d.material) + x.bandwidth() / 2) // Center within material column
-    .attr("cy", d => y(d.type) + y.bandwidth() / 2) // Center within type row
-    .attr("r", 10)
-    .attr("fill", d => color(d.type))
-    .attr("opacity", d => {
-      const minOpacity = 0.2; // Minimum opacity
-      return minOpacity + (d.count / maxCount) * (1 - minOpacity);
-    })
-    .style("cursor", "pointer")
-    .attr("stroke-width", 2)
-    .on("mouseover", function (event, d) {
-      svg.selectAll(".material-label")
-        .filter(label => label === d.material)
-        .style("font-weight", "bold");
+  .data(selectorData)
+  .enter()
+  .append("circle")
+  .attr("cx", d => x(d.material) + x.bandwidth() / 2) // Center within material column
+  .attr("cy", d => y(d.type) + y.bandwidth() / 2) // Center within type row
+  .attr("r", 10)
+  .attr("fill", d => color(d.type))
+  .attr("opacity", d => {
+    const minOpacity = 0.2; // Minimum opacity
+    return minOpacity + (d.count / maxCount) * (1 - minOpacity);
+  })
+  .attr("data-material", d => d.material) // Add material attribute
+  .attr("data-type", d => d.type) // Add type attribute
+  .style("cursor", "pointer")
+  .attr("stroke-width", 2)
+  .on("mouseover", function (event, d) {
+    svg.selectAll(".material-label")
+      .filter(label => label === d.material)
+      .style("font-weight", "bold");
 
-      svg.selectAll(".tick-text")
-        .filter(label => label === d.type)
-        .style("font-weight", "bold");
-    })
-    .on("mouseout", function () {
-      svg.selectAll(".material-label, .tick-text")
-        .style("font-weight", "normal");
-    })
-    .on("click", function (event, d) {
-      selectedMaterial = d.material;
-      selectedType = d.type;
+    svg.selectAll(".tick-text")
+      .filter(label => label === d.type)
+      .style("font-weight", "bold");
+  })
+  .on("mouseout", function () {
+    svg.selectAll(".material-label, .tick-text")
+      .style("font-weight", "normal");
+  })
+  .on("click", function (event, d) {
+    selectedMaterial = d.material;
+    selectedType = d.type;
 
-      // Reset all circle strokes
-      svg.selectAll("circle").attr("stroke", "none");
+    // Reset all circle strokes
+    svg.selectAll("circle").attr("stroke", "none");
 
-      // Highlight selected circle
-      d3.select(this).attr("stroke", "black");
+    // Highlight selected circle
+    d3.select(this).attr("stroke", "black");
 
-      console.log(`Filtering by Material: ${d.material}, Type: ${d.type}`);
-      filterDataBySelection(selectedMaterial, selectedType);
-    });
+    console.log(`Filtering by Material: ${d.material}, Type: ${d.type}`);
+    filterDataBySelection(selectedMaterial, selectedType);
+  });
 
   // X-axis labels (material)
   svg.selectAll(".material-label")
   .data(materials)
   .join("text")
   .attr("class", "material-label")
-  .attr("x", material => x(material) + x.bandwidth() -5) // Center horizontally within column
+  .attr("x", material => x(material) + x.bandwidth() - 5) // Center horizontally within column
   .attr("y", material => {
-      // Find the lowest circle's y-coordinate for this material
-      const circlesForMaterial = selectorData.filter(d => d.material === material);
-      if (circlesForMaterial.length > 0) {
-          const lowestCircleY = d3.max(circlesForMaterial.map(d => y(d.type) + y.bandwidth() / 2));
-          return lowestCircleY + 23; // Adjust padding below the lowest circle
-      }
-      return height + 20; // Default to bottom if no circles
+    // Find the lowest circle's y-coordinate for this material
+    const circlesForMaterial = selectorData.filter(d => d.material === material);
+    if (circlesForMaterial.length > 0) {
+      const lowestCircleY = d3.max(circlesForMaterial.map(d => y(d.type) + y.bandwidth() / 2));
+      return lowestCircleY + 23; // Adjust padding below the lowest circle
+    }
+    return height + 20; // Default to bottom if no circles
   })
   .text(material => material)
   .attr("text-anchor", "middle") // Center the text horizontally
@@ -235,12 +246,12 @@ function createCircleSelector(data) {
   .style("fill", "#333")
   .style("cursor", "pointer")
   .on("mouseover", function (event, material) {
-      svg.selectAll(`circle[data-material="${material}"]`).style("stroke", "black");
-      d3.select(this).style("font-weight", "bold");
+    svg.selectAll(`circle[data-material="${material}"]`).style("stroke", "black");
+    d3.select(this).style("font-weight", "bold");
   })
   .on("mouseout", function (event, material) {
-      svg.selectAll(`circle[data-material="${material}"]`).style("stroke", null);
-      d3.select(this).style("font-weight", "normal");
+    svg.selectAll(`circle[data-material="${material}"]`).style("stroke", null);
+    d3.select(this).style("font-weight", "normal");
   })
   .on("click", function (event, material) {
     selectedMaterial = material;
@@ -255,67 +266,66 @@ function createCircleSelector(data) {
     filterDataBySelection(selectedMaterial, null); // Filter by material
   });
 
-
   // Add y-axis labels (type)
   svg.selectAll(".tick-text")
-    .data(types)
-    .join("text")
-    .attr("class", d => `tick-text tick-text-${d}`)
-    .attr("x", -10) // Left of the grid
-    .attr("y", d => y(d) + y.bandwidth() / 2)
-    .attr("dy", "0.35em") // Vertical alignment
-    .text(d => d)
-    .attr("text-anchor", "end")
-    .style("font-size", "12px")
-    .style("fill", "#333")
-    .style("cursor", "pointer")
-    .on("mouseover", (event, d) => {
-      svg.selectAll(`circle[data-type="${d}"]`).style("stroke", "black");
-      d3.select(event.target).style("font-weight", "bold");
-    })
-    .on("mouseout", (event, d) => {
-      svg.selectAll(`circle[data-type="${d}"]`).style("stroke", null);
-      d3.select(event.target).style("font-weight", null);
-    })
-    .on("click", function (event, type) {
-      selectedMaterial = null;
-      selectedType = type;
+  .data(types)
+  .join("text")
+  .attr("class", d => `tick-text tick-text-${d}`)
+  .attr("x", -10) // Left of the grid
+  .attr("y", d => y(d) + y.bandwidth() / 2)
+  .attr("dy", "0.35em") // Vertical alignment
+  .text(d => d)
+  .attr("text-anchor", "end")
+  .style("font-size", "12px")
+  .style("fill", "#333")
+  .style("cursor", "pointer")
+  .on("mouseover", (event, d) => {
+    svg.selectAll(`circle[data-type="${d}"]`).style("stroke", "black");
+    d3.select(event.target).style("font-weight", "bold");
+  })
+  .on("mouseout", (event, d) => {
+    svg.selectAll(`circle[data-type="${d}"]`).style("stroke", null);
+    d3.select(event.target).style("font-weight", null);
+  })
+  .on("click", function (event, type) {
+    selectedMaterial = null;
+    selectedType = type;
 
-      // Reset all circle strokes
-      svg.selectAll("circle").attr("stroke", "none");
+    // Reset all circle strokes
+    svg.selectAll("circle").attr("stroke", "none");
 
-      // Highlight selected circles in row
-      svg.selectAll(`circle[data-type="${type}"]`).attr("stroke", "black");
+    // Highlight selected circles in row
+    svg.selectAll(`circle[data-type="${type}"]`).attr("stroke", "black");
 
-      filterDataBySelection(null, selectedType);
-    });
+    filterDataBySelection(null, selectedType);
+  });
 
-  // Add "All" label
+  // "All" label remains unchanged
   svg.append("text")
-    .attr("class", "all-label")
-    .attr("x", -10) // Align with the left side of y-axis labels
-    .attr("y", 190) // Place just below the last type label
-    .text("All")
-    .attr("text-anchor", "end")
-    .style("font-size", "12px")
-    .style("font-weight", "normal") // Default not bold
-    .style("cursor", "pointer")
-    .on("mouseover", function () {
-      d3.select(this).style("font-weight", "bold");
-    })
-    .on("mouseout", function () {
-      d3.select(this).style("font-weight", "normal");
-    })
-    .on("click", function () {
-      selectedMaterial = null;
-      selectedType = null;
+  .attr("class", "all-label")
+  .attr("x", -10) // Align with the left side of y-axis labels
+  .attr("y", 190) // Place just below the last type label
+  .text("All")
+  .attr("text-anchor", "end")
+  .style("font-size", "12px")
+  .style("font-weight", "normal") // Default not bold
+  .style("cursor", "pointer")
+  .on("mouseover", function () {
+    d3.select(this).style("font-weight", "bold");
+  })
+  .on("mouseout", function () {
+    d3.select(this).style("font-weight", "normal");
+  })
+  .on("click", function () {
+    selectedMaterial = null;
+    selectedType = null;
 
-      // Reset all circle strokes
-      svg.selectAll("circle").attr("stroke", "none");
+    // Reset all circle strokes
+    svg.selectAll("circle").attr("stroke", "none");
 
-      console.log("Filtering to show all data");
-      filterDataBySelection(null, null); // Reset filter to show all data
-    });
+    console.log("Filtering to show all data");
+    filterDataBySelection(null, null); // Reset filter to show all data
+  });
 }
 
 function filterDataBySelection(material, type) {
@@ -371,8 +381,6 @@ function initializeLayout() {
   // Define scales using chart area dimensions
   xScale = d3.scaleLinear().range([0, state.chartWidth]);
   yScale = d3.scaleLinear().range([chartHeight, 0]);
-
-  colorScale = d3.scaleOrdinal(d3.schemeDark2);
 
   // Add axes groups
   chart.append("g").attr("class", "axis x-axis").attr("transform", `translate(0, ${chartHeight})`);
@@ -470,53 +478,47 @@ function draw() {
 
   // Draw dots
   d3.select(".dots")
-    .selectAll("circle")
-    .data(filteredData, d => d.id)
-    .join("circle")
-    .attr("cx", d => xScale(d.year)) // Use xScale for horizontal positioning
-    .attr("cy", (d) => {
-      const yearGroup = groupedData.get(d.year); // Get all data points for this year
-      const stackIndex = yearGroup.indexOf(d);  // Find the position of this dot in the stack
-      return state.chartHeight - stackIndex * dotSpacing - axisPadding; // Apply spacing
-    })
-    .attr("r", dotRadius)
-    .attr("fill", d => colorScale(d[state.groupBy.selected] || "Unknown"))
-    .style("fill-opacity", 0.4) // Semi-transparent fill
-    .attr("stroke", d => colorScale(d[state.groupBy.selected] || "Unknown")) // Stroke matches the color
-    .attr("stroke-width", 1.5) // Define stroke width
-    .on("mouseenter", (event, d) => {
-      tooltip
-        .style("opacity", 1)
-        .html(`
-          ${d.year || "Unknown Year"} <strong>○</strong> ${d.country || "Unknown Country"}
-        `);
-    })
-    .on("mousemove", event => {
-      tooltip
-        .style("left", `${event.pageX + 10}px`)
-        .style("top", `${event.pageY + 10}px`);
-    })
-    .on("mouseleave", () => {
-      tooltip.style("opacity", 0);
-    });
+  .selectAll("circle")
+  .data(filteredData, d => d.id)
+  .join("circle")
+  .attr("cx", d => xScale(d.year)) // Use xScale for horizontal positioning
+  .attr("cy", d => {
+    const yearGroup = groupedData.get(d.year); // Get all data points for this year
+    const stackIndex = yearGroup.indexOf(d);  // Find the position of this dot in the stack
+    return state.chartHeight - stackIndex * dotSpacing - axisPadding; // Apply spacing
+  })
+  .attr("r", dotRadius)
+  .attr("fill", d => typeColors[d[state.groupBy.selected]] || "#666") // Use custom colors
+  .style("fill-opacity", 0.4) // Default semi-transparent fill
+  .attr("stroke", d => typeColors[d[state.groupBy.selected]] || "#666") // Stroke matches the color
+  .attr("stroke-width", 1.5) // Define stroke width
+  .on("mouseenter", (event, d) => {
+    // Highlight the dot with full opacity
+    d3.select(event.target).style("fill-opacity", 1);
+
+    // Show the tooltip
+    tooltip
+      .style("opacity", 1)
+      .html(`
+        ${d.year || "Unknown Year"} <strong>○</strong> ${d.country || "Unknown Country"}
+      `);
+  })
+  .on("mousemove", event => {
+    // Move the tooltip with the mouse
+    tooltip
+      .style("left", `${event.pageX + 10}px`)
+      .style("top", `${event.pageY + 10}px`);
+  })
+  .on("mouseleave", (event) => {
+    // Reset the dot's opacity
+    d3.select(event.target).style("fill-opacity", 0.4);
+
+    // Hide the tooltip
+    tooltip.style("opacity", 0);
+  });
 
   // Remove any existing y-axis elements
   d3.select(".y-axis").selectAll("*").remove();
-
-  // Update legend
-  const legendData = Array.from(new Set(filteredData.map(d => d[state.groupBy.selected])));
-  const legend = d3.select(".legend");
-  legend
-    .selectAll(".legend-row")
-    .data(legendData)
-    .join("div")
-    .attr("class", "legend-row")
-    .html(
-      d => `
-        <div class="box" style="background-color:${colorScale(d)};"></div>
-        <div class="legend-label">${d}</div>
-      `
-    );
 }
 // #endregion
 
