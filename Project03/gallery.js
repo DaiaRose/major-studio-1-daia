@@ -144,7 +144,7 @@ function showCard(data) {
           <p><strong>Museum:</strong> ${
             deptMapping[data.dept] || "Unknown Department"
           }</p>
-          <p><strong>Length:</strong> ${data.length ? `${data.length} cm` : "Unknown"}</p>
+          <p><strong>Length:</strong> ${data.length ? `${data.length} in` : "Unknown"}</p>
         </div>
       </div>
       <button onclick="closeCard()" class="close-card-btn">×</button>

@@ -116,136 +116,215 @@ function showView(viewId) {
 // #endregion
 
 // #region Circle SELECTOR
+
 // Create the selector grid
 function createCircleSelector(data) {
+  let selectedMaterial = null;
+  let selectedType = null;
+
   // Group data by material and type
   const groupedData = {};
   data.forEach(item => {
-      if (!groupedData[item.material]) groupedData[item.material] = {};
-      if (!groupedData[item.material][item.type]) groupedData[item.material][item.type] = 0;
-      groupedData[item.material][item.type]++;
+    if (!groupedData[item.material]) groupedData[item.material] = {};
+    if (!groupedData[item.material][item.type]) groupedData[item.material][item.type] = 0;
+    groupedData[item.material][item.type]++;
   });
 
   // Flatten grouped data for visualization
   const selectorData = Object.entries(groupedData).flatMap(([material, types]) =>
-      Object.entries(types).map(([type, count]) => ({
-          material,
-          type,
-          count,
-      }))
+    Object.entries(types).map(([type, count]) => ({
+      material,
+      type,
+      count,
+    }))
   );
 
   // Define dimensions
   const width = 250;
   const height = 250;
-  const margin = { top: 10, right: 10, bottom: 0, left: 60 };
+  const margin = { top: 40, right: 10, bottom: 40, left: 60 }; // Adjust for "All" label
   const spacing = 10;
 
   // Create SVG
   const svg = d3.select("#circle-selector")
-      .html("") // Clear existing content
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+    .html("") // Clear existing content
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
   // Scales
   const materials = [...new Set(selectorData.map(d => d.material))];
   const types = [...new Set(selectorData.map(d => d.type))];
 
   const x = d3.scaleBand()
-      .domain(materials)
-      .range([0, width * 0.4])
-      .padding(0);
+    .domain(materials)
+    .range([0, width * 0.4])
+    .padding(0);
 
   const y = d3.scaleBand()
-      .domain(["knife", "fork",  "spoon", "folding","stick", "utensil", "dessert"])
-      .range([0, height* 0.7])
-      .padding(0);
+    .domain(["knife", "fork", "spoon", "folding", "stick", "utensil", "dessert"])
+    .range([0, height * 0.7])
+    .padding(0);
 
   const maxCount = d3.max(selectorData, d => d.count);
   const color = d3.scaleOrdinal(d3.schemeCategory10);
 
   // Add circles
+  // Add circles
   svg.selectAll("circle")
-  .data(selectorData)
-  .enter()
-  .append("circle")
-  .attr("cx", d => x(d.material) + x.bandwidth() / 2) // Center within material column
-  .attr("cy", d => y(d.type) + y.bandwidth() / 2) // Center within type row
-  .attr("r", 10)
-  .attr("fill", d => color(d.type))
-  .attr("opacity", d => {
+    .data(selectorData)
+    .enter()
+    .append("circle")
+    .attr("cx", d => x(d.material) + x.bandwidth() / 2) // Center within material column
+    .attr("cy", d => y(d.type) + y.bandwidth() / 2) // Center within type row
+    .attr("r", 10)
+    .attr("fill", d => color(d.type))
+    .attr("opacity", d => {
       const minOpacity = 0.2; // Minimum opacity
       return minOpacity + (d.count / maxCount) * (1 - minOpacity);
-  })
-  .style("cursor", "pointer")
-  .on("mouseover", function (event, d) {
-      // Bold the corresponding material label
+    })
+    .style("cursor", "pointer")
+    .attr("stroke-width", 2)
+    .on("mouseover", function (event, d) {
       svg.selectAll(".material-label")
         .filter(label => label === d.material)
         .style("font-weight", "bold");
 
-      // Bold the corresponding type label
-      svg.selectAll(".tick text")
+      svg.selectAll(".tick-text")
         .filter(label => label === d.type)
         .style("font-weight", "bold");
-  })
-  .on("mouseout", function () {
-      // Remove bold styling from all labels
-      svg.selectAll(".material-label, .tick text")
+    })
+    .on("mouseout", function () {
+      svg.selectAll(".material-label, .tick-text")
         .style("font-weight", "normal");
-  })
-  .on("click", (event, d) => {
+    })
+    .on("click", function (event, d) {
+      selectedMaterial = d.material;
+      selectedType = d.type;
+
+      // Reset all circle strokes
+      svg.selectAll("circle").attr("stroke", "none");
+
+      // Highlight selected circle
+      d3.select(this).attr("stroke", "black");
+
       console.log(`Filtering by Material: ${d.material}, Type: ${d.type}`);
-      filterDataBySelection(d.material, d.type);
-  });
+      filterDataBySelection(selectedMaterial, selectedType);
+    });
 
   // X-axis labels (material)
   svg.selectAll(".material-label")
   .data(materials)
   .join("text")
   .attr("class", "material-label")
-  .attr("x", material => x(material) + x.bandwidth() - 5)
+  .attr("x", material => x(material) + x.bandwidth() -5) // Center horizontally within column
   .attr("y", material => {
       // Find the lowest circle's y-coordinate for this material
       const circlesForMaterial = selectorData.filter(d => d.material === material);
       if (circlesForMaterial.length > 0) {
-          const lowestCircle = d3.max(circlesForMaterial.map(d => y(d.type) + y.bandwidth() / 2));
-          return lowestCircle + 23; // Add padding below the lowest circle
+          const lowestCircleY = d3.max(circlesForMaterial.map(d => y(d.type) + y.bandwidth() / 2));
+          return lowestCircleY + 23; // Adjust padding below the lowest circle
       }
       return height + 20; // Default to bottom if no circles
   })
   .text(material => material)
   .attr("text-anchor", "middle") // Center the text horizontally
   .style("font-size", "12px")
-  .style("fill", "#333"); // Adjust style as needed
+  .style("fill", "#333")
+  .style("cursor", "pointer")
+  .on("mouseover", function (event, material) {
+      svg.selectAll(`circle[data-material="${material}"]`).style("stroke", "black");
+      d3.select(this).style("font-weight", "bold");
+  })
+  .on("mouseout", function (event, material) {
+      svg.selectAll(`circle[data-material="${material}"]`).style("stroke", null);
+      d3.select(this).style("font-weight", "normal");
+  })
+  .on("click", function (event, material) {
+    selectedMaterial = material;
+    selectedType = null;
 
-  // Y-axis labels (type)
-  const yAxis = svg.append("g")
-  .attr("transform", `translate(0, 0)`)
-  .call(d3.axisLeft(y));
+    // Reset all circle strokes
+    svg.selectAll("circle").attr("stroke", "none");
 
-  yAxis.selectAll("path") // Select the axis line
-    .remove(); // Remove the line
+    // Highlight selected circles in column
+    svg.selectAll(`circle[data-material="${material}"]`).attr("stroke", "black");
 
-  yAxis.selectAll(".tick line") // Select the tick lines
-    .remove(); // Remove tick lines
+    filterDataBySelection(selectedMaterial, null); // Filter by material
+  });
 
-  yAxis.selectAll(".tick text") // Keep the labels
-    .attr("class", "tick-text") // Add a class for easier selection
-    .style("font-size", "12px") // Optionally style the labels
-    .style("fill", "#333"); // Adjust color as needed
 
+  // Add y-axis labels (type)
+  svg.selectAll(".tick-text")
+    .data(types)
+    .join("text")
+    .attr("class", d => `tick-text tick-text-${d}`)
+    .attr("x", -10) // Left of the grid
+    .attr("y", d => y(d) + y.bandwidth() / 2)
+    .attr("dy", "0.35em") // Vertical alignment
+    .text(d => d)
+    .attr("text-anchor", "end")
+    .style("font-size", "12px")
+    .style("fill", "#333")
+    .style("cursor", "pointer")
+    .on("mouseover", (event, d) => {
+      svg.selectAll(`circle[data-type="${d}"]`).style("stroke", "black");
+      d3.select(event.target).style("font-weight", "bold");
+    })
+    .on("mouseout", (event, d) => {
+      svg.selectAll(`circle[data-type="${d}"]`).style("stroke", null);
+      d3.select(event.target).style("font-weight", null);
+    })
+    .on("click", function (event, type) {
+      selectedMaterial = null;
+      selectedType = type;
+
+      // Reset all circle strokes
+      svg.selectAll("circle").attr("stroke", "none");
+
+      // Highlight selected circles in row
+      svg.selectAll(`circle[data-type="${type}"]`).attr("stroke", "black");
+
+      filterDataBySelection(null, selectedType);
+    });
+
+  // Add "All" label
+  svg.append("text")
+    .attr("class", "all-label")
+    .attr("x", -10) // Align with the left side of y-axis labels
+    .attr("y", 190) // Place just below the last type label
+    .text("All")
+    .attr("text-anchor", "end")
+    .style("font-size", "12px")
+    .style("font-weight", "normal") // Default not bold
+    .style("cursor", "pointer")
+    .on("mouseover", function () {
+      d3.select(this).style("font-weight", "bold");
+    })
+    .on("mouseout", function () {
+      d3.select(this).style("font-weight", "normal");
+    })
+    .on("click", function () {
+      selectedMaterial = null;
+      selectedType = null;
+
+      // Reset all circle strokes
+      svg.selectAll("circle").attr("stroke", "none");
+
+      console.log("Filtering to show all data");
+      filterDataBySelection(null, null); // Reset filter to show all data
+    });
+}
 
 function filterDataBySelection(material, type) {
   const filteredData = state.data.filter(
-      d => d.material === material && d.type === type
+    d => (material ? d.material === material : true) && (type ? d.type === type : true)
   );
   setState({ filteredData });
 }
-}
+
 
 // #endregion
 
