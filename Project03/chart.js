@@ -153,7 +153,6 @@ function createCircleSelector(data) {
   const width = 250;
   const height = 250;
   const margin = { top: 40, right: 10, bottom: 40, left: 60 }; // Adjust for "All" label
-  const spacing = 10;
 
   // Create SVG
   const svg = d3.select("#circle-selector")
@@ -304,7 +303,7 @@ function createCircleSelector(data) {
   svg.append("text")
   .attr("class", "all-label")
   .attr("x", -10) // Align with the left side of y-axis labels
-  .attr("y", 190) // Place just below the last type label
+  .attr("y", 185) // Place just below the last type label
   .text("All")
   .attr("text-anchor", "end")
   .style("font-size", "12px")
@@ -455,7 +454,11 @@ function draw() {
   // Update axes
   d3.select(".x-axis").selectAll("*").remove(); // Clear existing axis elements
   d3.select(".x-axis")
-    .call(d3.axisBottom(xScale).tickSizeOuter(0))
+    .call(
+      d3.axisBottom(xScale)
+        .tickSizeOuter(0)
+        .tickFormat(d3.format("d")) // Format as a plain integer without thousands separator
+    )
     .attr("transform", `translate(0, ${yScale(0)})`);
 
   d3.select(".y-axis").selectAll("*").remove(); // Clear existing axis elements
