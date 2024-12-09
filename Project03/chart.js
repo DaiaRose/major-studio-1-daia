@@ -478,48 +478,53 @@ function draw() {
 
   // Draw dots
   d3.select(".dots")
-  .selectAll("circle")
-  .data(filteredData, d => d.id)
-  .join("circle")
-  .attr("cx", d => xScale(d.year)) // Use xScale for horizontal positioning
-  .attr("cy", d => {
-    const yearGroup = groupedData.get(d.year); // Get all data points for this year
-    const stackIndex = yearGroup.indexOf(d);  // Find the position of this dot in the stack
-    return state.chartHeight - stackIndex * dotSpacing - axisPadding; // Apply spacing
-  })
-  .attr("r", dotRadius)
-  .attr("fill", d => typeColors[d[state.groupBy.selected]] || "#666") // Use custom colors
-  .style("fill-opacity", 0.4) // Default semi-transparent fill
-  .attr("stroke", d => typeColors[d[state.groupBy.selected]] || "#666") // Stroke matches the color
-  .attr("stroke-width", 1.5) // Define stroke width
-  .on("mouseenter", (event, d) => {
-    // Highlight the dot with full opacity
-    d3.select(event.target).style("fill-opacity", 1);
+    .selectAll("circle")
+    .data(filteredData, d => d.id)
+    .join("circle")
+    .attr("cx", d => xScale(d.year)) // Use xScale for horizontal positioning
+    .attr("cy", d => {
+      const yearGroup = groupedData.get(d.year); // Get all data points for this year
+      const stackIndex = yearGroup.indexOf(d);  // Find the position of this dot in the stack
+      return state.chartHeight - stackIndex * dotSpacing - axisPadding; // Apply spacing
+    })
+    .attr("r", dotRadius)
+    .attr("fill", d => typeColors[d[state.groupBy.selected]] || "#666") // Use custom colors
+    .style("fill-opacity", 0.4) // Default semi-transparent fill
+    .attr("stroke", d => typeColors[d[state.groupBy.selected]] || "#666") // Stroke matches the color
+    .attr("stroke-width", 1.5) // Define stroke width
+    .on("mouseenter", (event, d) => {
+      // Highlight the dot with full opacity
+      d3.select(event.target).style("fill-opacity", 1);
 
-    // Show the tooltip
-    tooltip
-      .style("opacity", 1)
-      .html(`
-        ${d.year || "Unknown Year"} <strong>○</strong> ${d.country || "Unknown Country"}
-      `);
-  })
-  .on("mousemove", event => {
-    // Move the tooltip with the mouse
-    tooltip
-      .style("left", `${event.pageX + 10}px`)
-      .style("top", `${event.pageY + 10}px`);
-  })
-  .on("mouseleave", (event) => {
-    // Reset the dot's opacity
-    d3.select(event.target).style("fill-opacity", 0.4);
+      // Show the tooltip
+      tooltip
+        .style("opacity", 1)
+        .html(`
+          ${d.year || "Unknown Year"} <strong>○</strong> ${d.country || "Unknown Country"}
+        `);
+    })
+    .on("mousemove", event => {
+      // Move the tooltip with the mouse
+      tooltip
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY + 10}px`);
+    })
+    .on("mouseleave", (event) => {
+      // Reset the dot's opacity
+      d3.select(event.target).style("fill-opacity", 0.4);
 
-    // Hide the tooltip
-    tooltip.style("opacity", 0);
-  });
+      // Hide the tooltip
+      tooltip.style("opacity", 0);
+    })
+    .on("click", (event, d) => {
+      // Call showCard with the clicked dot's data
+      showCard(d);
+    });
 
   // Remove any existing y-axis elements
   d3.select(".y-axis").selectAll("*").remove();
 }
+
 // #endregion
 
 // Load data and start visualization
