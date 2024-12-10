@@ -65,11 +65,11 @@ document.getElementById("switch-view-btn").addEventListener("click", () => {
   const buttonText = button.querySelector(".button-text");
 
   if (nextView === "view1") {
-    buttonIcon.src = "view-chart-icon.png";
+    buttonIcon.src = "view-spoon-icon.png";
     buttonIcon.alt = "View Chart";
     buttonText.textContent = "View Gallery";
   } else if (nextView === "view2") {
-    buttonIcon.src = "view-gallery-icon.png";
+    buttonIcon.src = "view-fork-icon.png";
     buttonIcon.alt = "View Gallery";
     buttonText.textContent = "View Chart";
   } else {

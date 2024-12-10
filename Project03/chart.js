@@ -197,19 +197,21 @@ function createCircleSelector(data) {
   .attr("data-type", d => d.type) // Add type attribute
   .style("cursor", "pointer")
   .attr("stroke-width", 2)
+
   .on("mouseover", function (event, d) {
     svg.selectAll(".material-label")
       .filter(label => label === d.material)
-      .style("font-weight", "bold");
+      .style("text-decoration", "underline"); 
 
     svg.selectAll(".tick-text")
       .filter(label => label === d.type)
-      .style("font-weight", "bold");
+      .style("text-decoration", "underline"); 
   })
   .on("mouseout", function () {
     svg.selectAll(".material-label, .tick-text")
-      .style("font-weight", "normal");
+      .style("text-decoration", "none"); 
   })
+
   .on("click", function (event, d) {
     selectedMaterial = d.material;
     selectedType = d.type;
