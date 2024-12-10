@@ -40,7 +40,7 @@ async function dataLoad() {
 
   const data = await d3.json("cleaned_imgdata.json");
   const validData = data.filter(d => d.year !== null && d.type !== null);
-
+  
   console.log(`Loaded ${validData.length} valid items.`);
 
   const processedData = validData.map((d, i) => ({

@@ -11,6 +11,8 @@ async function populateGallery() {
     const response = await fetch('cleaned_imgdata.json');
     const imageData = await response.json();
 
+    console.log(`Gallery Loaded ${imageData.length} valid items.`);
+
     // Sort the data by year (ascending)
     const sortedData = imageData.sort((a, b) => {
       const yearA = a.year || Number.MAX_SAFE_INTEGER;
@@ -41,6 +43,7 @@ async function populateGallery() {
     });
 
     console.log("Images loaded, initializing slider.");
+
     initializeSlider(sortedData);
   } catch (error) {
     console.error("Error populating gallery:", error);

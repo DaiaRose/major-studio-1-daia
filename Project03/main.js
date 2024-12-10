@@ -25,6 +25,20 @@ function showView(viewId) {
       overlay.style.display = "none";
     }
   }
+
+  // Handle visibility of shared elements
+  const titleSection = document.getElementById("title-section");
+  const navButtons = document.getElementById("nav-buttons");
+  if (viewId === "view1" || viewId === "view2") {
+    if (titleSection) titleSection.classList.remove("hidden");
+    if (navButtons) navButtons.classList.remove("hidden");
+  } else if (viewId === "about-page") {
+    if (titleSection) titleSection.classList.add("hidden");
+    if (navButtons) navButtons.classList.add("hidden");
+  } else {
+    if (titleSection) titleSection.classList.add("hidden");
+    if (navButtons) navButtons.classList.add("hidden");
+  }
 }
 
 // Event listener for homepage to gallery
@@ -76,3 +90,9 @@ document.getElementById("switch-view-btn").addEventListener("click", () => {
     console.error("Unexpected view ID:", nextView);
   }
 });
+
+// Event listener for About button in Gallery view
+document.getElementById("about-btn").addEventListener("click", () => {
+  showView("about-page");
+});
+

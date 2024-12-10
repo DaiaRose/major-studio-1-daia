@@ -19,6 +19,7 @@ body {
   position: absolute; /* Position views on top of each other */
   top: 0;
   left: 0;
+  background-color: #f5f5f5;
 }
 
 .view.active {
@@ -165,6 +166,76 @@ body {
 .custom-button:hover {
   transform: scale(1.05);
 }
+
+/* About Button Styling */
+#about-btn {
+  position: fixed;
+  top: 10px; /* Distance from the top */
+  right: 10px; /* Distance from the right */
+  z-index: 5; /* Same z-index as #nav-buttons for consistency */
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between image and text */
+  padding: 10px; /* Match nav button padding */
+  border-radius: 8px; /* Match nav button rounding */
+  cursor: pointer;
+  color: #000000; /* Match nav button text color */
+}
+
+#about-btn img {
+  width: auto;
+  height: 40px;
+  max-width: 70px;
+  max-height: 40px;
+  object-fit: contain; /* Maintain aspect ratio */
+}
+
+#about-btn:hover {
+  transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+/* #endregion */
+
+/* #region About page */
+
+#about-content {
+  margin-top: 40px; 
+  background-color: #f5f5f5; /* Match your desired background color */
+  box-sizing: border-box; /* Ensure padding is included in dimensions */
+  width: 100%; /* Extend across the full width */
+  min-height: 100vh; /* Ensure it takes at least the viewport height */
+}
+
+#about-content h2 {
+  font-size: 1.5rem;
+  margin-top: 130px; 
+  margin-bottom: 10px; 
+  margin-left: 70px;
+  margin-right: 40px;
+  color: #000000;
+}
+
+#about-content p {
+  font-size: 1.2rem; 
+  line-height: 1.6; 
+  margin-bottom: 10px; 
+  margin-left: 70px;
+  margin-right: 40px;
+  color: #000000;
+  background-color: #f5f5f5;
+}
+
+#about-content img {
+  max-width: 100%; /* Ensure images are responsive */
+  margin-left: 70px;
+  margin-right: 40px;
+  height: auto; /* Maintain aspect ratio */
+  margin: 20px 0; /* Space above and below images */
+  border-radius: 8px; /* Slight rounding of image corners */
+  background-color: #f5f5f5;
+}
+
+
 /* #endregion */
 
 /* #region Chart Styling */
@@ -357,7 +428,7 @@ circle {
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex; /* Use flexbox for image and text alignment */
-  background: #f5f5f5;
+  background: #ffffff;
   border: 1px solid #ddd;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   padding: 20px;
