@@ -302,7 +302,7 @@ function createCircleSelector(data) {
   // "All" label remains unchanged
   svg.append("text")
   .attr("class", "all-label")
-  .attr("x", -10) // Align with the left side of y-axis labels
+  .attr("x", -10) 
   .attr("y", 185) // Place just below the last type label
   .text("All")
   .attr("text-anchor", "end")

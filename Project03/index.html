@@ -3,25 +3,42 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MS1 Project in Progress</title>
+    <title>MS1 Project</title>
     <link rel="stylesheet" type="text/css" href="./style.css" />
   </head>
   <body>
+    <!-- Homepage -->
+    <div id="homepage" class="view active">
+      <div id="homepage-overlay"></div>
+      <h1 class="title-line">Cutlery</h1>
+      <h1 class="title-line">Chronicles</h1>
+      <img src="dragonUSE.png" alt="dragon knife Image" id="homepage-image" />
+      <p id="homepage-description">Explore the world of historical cutlery through data visualization and imagery.</p>
+      <p id="homepage-name">Daia Bromberg ○ Major Studio 1 ○ 2024</p>
+      <button id="homepage-button" class="circle-button"></button>
+      </div>
+    </div>
+ 
+    <!-- Shared Title -->
+    <div id="title-section" >
+      <h1>Cutlery Chronicles</h1>
+    </div>
+
     <!-- Navigation/Control Buttons -->
-    <div id="nav-buttons">
-      <button id="switch-view-btn">Switch View</button>
+    <div id="nav-buttons" >
+      <div id="switch-view-btn" class="custom-button">
+        <img src="view-chart-icon.png" alt="View Chart" class="button-icon" />
+        <span class="button-text">View Chart</span>
+      </div>
     </div>
 
     <!-- View 1: Chart -->
-    <div id="view1" class="interactive view active">
+    <div id="view1" class="interactive view">
       <div id="circle-selector" class="interactive-selector"></div>
     </div>
 
     <!-- View 2: Image Gallery -->
     <div id="view2" class="interactive view">
-      <div id="title-section">
-        <h1>Cutlery Chronicles</h1>
-      </div>
       <div id="image-gallery" class="image-gallery">
         <div id="row1" class="image-row"></div>
         <div id="row2" class="image-row"></div>
