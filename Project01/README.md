@@ -1,3 +1,17 @@
+Project 1
+Cutlery Collection- an exploration of Smithsonian Cutlery data
+
+Pages: https://daiarose.github.io/major-studio-1-daia/Project01/
+
+This project explores the quantative aspects of all cutlery objects within the Smithsonian. It categorizes them by material and type and displays a heatmap of each amount with additional details within each grouping label of the subcategories it contains.
+
+Final Prototype:
+<img width="607" alt="Cutlery-hoveroverMaterial" src="https://github.com/user-attachments/assets/9b54a426-99d6-458e-b052-b6dd0ee5cda2" />
+
+Mockup:
+![DaiaCutleryMock](https://github.com/user-attachments/assets/aba1682c-79ca-45a9-8478-a63aeb0b04c1)
+
+
 01B Concept Sketches
 Daia Bromberg 9/12/24
 
